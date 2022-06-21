@@ -12,8 +12,8 @@ import numpy as np
 
 # These constants are to create random data for the sake of this example
 N_POINTS = 100
-TARGET_X_SLOPE = 0.4
-TARGET_y_SLOPE = 0.2
+TARGET_X_SLOPE = 0.3
+TARGET_y_SLOPE = 0.6
 TARGET_OFFSET  = 5
 EXTENTS = 5
 NOISE = 0.5
@@ -60,8 +60,8 @@ residual = np.linalg.norm(errors)
 # fit, residual, rnk, s = lstsq(A, b)
 
 print("solution: %f x + %f y + %f = z" % (fit[0], fit[1], fit[2]))
-print("errors: \n", errors)
-print("residual:", residual)
+#print("errors: \n", errors)
+#print("residual:", residual)
 
 # plot plane
 xlim = ax.get_xlim()
@@ -79,6 +79,15 @@ ax.set_ylabel('y')
 ax.set_zlabel('z')
 plt.show()
 
-print(Z)
+#print(Z)
 
 #compute slope of plane (gradient)
+Z_grad = fit[0:2]
+max_grad = np.linalg.norm(Z_grad)
+print('Ebenensteigung:', max_grad)
+
+
+
+
+
+

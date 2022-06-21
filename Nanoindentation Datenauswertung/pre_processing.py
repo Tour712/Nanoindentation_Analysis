@@ -184,13 +184,20 @@ E, E_reduced = calc_emod(S, A)
 H = calc_H(load_np_unload[-1], A)
 
 plt.subplot(3,1,1)
-plt.plot(depth_np, load_np)
+plt.plot(depth_np, load_np, label = 'Messdaten')
+plt.xlabel('Tiefe [nm]')
+plt.ylabel('Kraft [mN]')
+plt.legend() 
 plt.subplot(3,1,2)
-plt.plot(time_2_np, load_np)  
+plt.plot(time_2_np, load_np) 
+plt.xlabel('Zeit [s]')
+plt.ylabel('Kraft [mN]')  
 plt.subplot(3,1,3)
 plt.plot(depth_np_unload, load_np_unload, label = 'Daten')  
-plt.plot(depth_np_unload, func_exp(depth_np_unload, popt_log[0], popt_log[1], popt_log[2]), label = 'log fit')  
-  
+plt.plot(depth_np_unload, func_exp(depth_np_unload, popt_log[0], popt_log[1], popt_log[2]), label = 'log fitting')  
+plt.xlabel('Tiefe [nm]')
+plt.ylabel('Kraft [mN]')
+plt.legend() 
  
 #%% 
 #############################################################################
