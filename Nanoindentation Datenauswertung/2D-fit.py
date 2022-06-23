@@ -30,11 +30,16 @@ for i in range(N_POINTS):
               ys[i]*TARGET_y_SLOPE + \
               TARGET_OFFSET + np.random.normal(scale=NOISE))
 
-#data from modulus mapping
-xr = [0, 5, 10, 15, 20, 0, 5, 10, 15, 20] #[um]
-yr = [0, 0, 0, 0, 0, 2, 2, 2, 2, 2]   #[um]
-zr = [5.193168, 5.191017, 5.189020, 5.187237, 5.185195,	5.183112,	5.183038,	5.183049,	5.181165, 5.179137	]   #[um]
+# #data from modulus mapping
+# xr = [0, 5, 10, 15, 20, 0, 5, 10, 15, 20] #[um]
+# yr = [0, 0, 0, 0, 0, 2, 2, 2, 2, 2]   #[um]
+# zr = [5.193168, 5.191017, 5.189020, 5.187237, 5.185195,	5.183112,	5.183038,	5.183049,	5.181165, 5.179137	]   #[um]
 
+
+#data from modulus mapping (23.06.22)
+xs = [0, 0, 0, 10, 10, 10, 20, 20, 20] #[um]
+ys = [0, 10, 20, 20, 10, 0, 0, 10, 20]   #[um]
+zs = [3.815748, 3.805186, 3.794780, 3.730393, 3.740052, 3.751712, 3.687332, 3.675042, 3.668683]   #[um]
 
 # plot raw data
 plt.figure()
@@ -63,6 +68,13 @@ print("solution: %f x + %f y + %f = z" % (fit[0], fit[1], fit[2]))
 #print("errors: \n", errors)
 #print("residual:", residual)
 
+
+#compute slope of plane (gradient)
+Z_grad = fit[0:2]
+max_grad = np.linalg.norm(Z_grad)
+max_deg = np.rad2deg(np.arctan(max_grad))
+print('Ebenensteigung []:', max_deg)
+
 # plot plane
 xlim = ax.get_xlim()
 ylim = ax.get_ylim()
@@ -73,18 +85,18 @@ for r in range(X.shape[0]):
     for c in range(X.shape[1]):
         Z[r,c] = fit[0] * X[r,c] + fit[1] * Y[r,c] + fit[2]
 ax.plot_wireframe(X,Y,Z, color='k')
-
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_zlabel('z')
+#tex = "Ebenengleichung:" +str(fit[0])+'*x'+str(fit[1])+'*y'+str(fit[2])+'=z'
+ax.set_xlabel('x [um]\n')
+ax.set_ylabel('y [um]')
+ax.set_zlabel('z [um]')
+ax.set_title('Untersuchung der Ausrichtung\n'+'Ebenensteigung: %f°' % (max_deg))
+tex = "Ebenengleichung:" +str(fit[0])+'*x'+str(fit[1])+'*y'+str(fit[2])+'=z'
+#ax.text(18, 14, 3.85, tex, fontsize=11, va='bottom')
 plt.show()
 
 #print(Z)
 
-#compute slope of plane (gradient)
-Z_grad = fit[0:2]
-max_grad = np.linalg.norm(Z_grad)
-print('Ebenensteigung:', max_grad)
+
 
 
 

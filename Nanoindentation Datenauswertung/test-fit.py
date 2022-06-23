@@ -35,6 +35,9 @@ def func_log(reversed_piezo, alpha, m, h_f):
 def func_lin(reversed_piezo, alpha, m, h_f):
     return alpha+m*(reversed_piezo-h_f)
 
+
+
+
 param_l, cov_l = curve_fit(func_lin, h[int(fit_range*len(h)):], P_noise[int(fit_range*len(h)):])
 Y_l = func_lin(h, param_l[0], param_l[1], param_l[2])
 

@@ -20,7 +20,7 @@ C_area = [24.5, 0]
 e_tip = 0
 nu_tip = 0
 
-fit_range = [0.6, 0.95]  #
+fit_range = [0.4, 0.95]  #
 
 
 #############################################################################
@@ -129,7 +129,7 @@ def func_log(reversed_piezo, alpha, m, h_f ):
 def fitting(reversed_piezo, reversed_MEMS, fit_range, *p0, fit_func=func_lin):
     start_index = int(len(reversed_piezo)*fit_range[0])
     end_index = int(len(reversed_piezo)*fit_range[1])
-    return curve_fit(fit_func, reversed_piezo[start_index:end_index], reversed_MEMS[start_index:end_index], *p0)
+    return curve_fit(fit_func, reversed_piezo[start_index:end_index], reversed_MEMS[start_index:end_index], *p0, maxfev=5000)
 
 def detect_poc(F, h, delta=3):
     for index, value in enumerate(F):
@@ -154,8 +154,43 @@ def calc_emod(S, A, beta=1.05, nu_s=0.3, E_t=1140, nu_t=0.07):
 
 def calc_H(P_max, A):
     return (P_max*10**-3)/(A*10**-12)
+############################################################################# 
+#evaluation of fitting algorithm
 
+iterations = 1
+start_param = (0.1,1.3,100)
+h_max  = 500    #[nm]
+n_points = 100
+noise_std_P = np.linspace(0,4,10)
+alpha = 0.05
+m = 1.25
+h_f = 0
+
+
+popt_exp_g, cov_exp_g = [], []
+popt_exp, cov_exp = [], []
+
+for i in noise_std_P:
+    h = np.linspace(0, h_max, n_points)#[nm]
+    noise_P = np.random.normal(0, i, n_points)
+    P = alpha*(h - h_f)**m+noise_P     #[nN]
     
+    for i in range(iterations):
+        p, c = fitting(h, P, fit_range, start_param, fit_func=func_exp)
+        popt_exp.append(p)
+    
+    a,m_t,h_t = 0,0,0
+    
+    for i in popt_exp:
+        a += i[0]
+        m_t += i[1]
+        h_t += i[2]    
+    a = a/len(popt_exp)    
+    m_t = m_t/len(popt_exp)
+    h_f = h_f/len(popt_exp)
+    popt_exp_g.append([a,m_t,h_f])
+    
+#%%
 ############################################################################# 
 #Hysitron sample file
 #depth in [nm] and load in [mN]
