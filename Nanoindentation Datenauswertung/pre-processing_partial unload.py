@@ -77,6 +77,13 @@ def data_conversion(Piezo, MEMS, time):
         MEMS[i]= float(MEMS[i].replace(',','.')) 
         time[i]= float(time[i].replace(',','.'))
     return np.array(Piezo), np.array(MEMS), np.array(time)
+
+def poc_detect(Piezo_np, MEMS_np, time_np):
+    for index_poc, val in enumerate(MEMS_np):
+        if (val) > 1.5:
+            return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:], index_poc
+            break
+    
     
 def data_splitting(Piezo_np,MEMS_np,time_np, index_start = 5):
     '''
@@ -156,12 +163,13 @@ def calc_hf(reversed_piezo, reversed_MEMS,fit_range_hf):
 #############################################################################
 #partial unload
 #data import and conversion
-path = 'data/test partial unload on saphire-2'
+path = 'data/partial unload on sapphire'
 Piezo, MEMS, time = imp_data(path)
 Piezo_np, MEMS_np, time_np = data_conversion(Piezo, MEMS, time)
 
 #Piezo offset position and conversion to [nm]
 Piezo_np = (Piezo_np - Piezo_np[0])*1000
+Piezo_np, MEMS_np, time_np, poc_i = poc_detect(Piezo_np, MEMS_np, time_np)
 Data = np.array([Piezo_np, MEMS_np, time_np])   #3xn array containing all the data
 
 #############################################################################
@@ -219,14 +227,20 @@ for i in range(len(index_l)):
     unload_Piezo.append(up[::-1])
     unload_MEMS.append(uM[::-1]) 
     if i==len(index_l):
-        par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.4, 0.95], (0.1,1,0), fit_func=func_log)
+        #par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.3, 0.95], (1.0,1,0), fit_func=func_log)
+        #uncomment for power law fit
+        par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.4, 0.95], (1.0,1,0, 95), fit_func=func_exp)
     else:         
-        par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.4, 0.95], (0.1,1,0), fit_func=func_log) 
+        #par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.3, 0.95], (1.0 ,1,0), fit_func=func_log) 
+        #uncomment for power law fit
+        par, cov = fitting(unload_Piezo[i] , unload_MEMS[i], [0.4, 0.95], (1.0, 1.0 , 95), fit_func=func_exp)
     popt_log.append(par)
     pcov_log.append(cov)
     ax.plot(unload_Piezo[i], func_exp(unload_Piezo[i], par[0], par[1], par[2]), label = 'log fit' + str(i))
     S.append(calc_stiff(par, up[0]))
-ax.legend()     
+
+
+        
 # #############################################################################
 # #curve fitting
 

@@ -157,11 +157,11 @@ def calc_H(P_max, A):
 ############################################################################# 
 #evaluation of fitting algorithm
 
-iterations = 1
+iterations = 100
 start_param = (0.1,1.3,100)
 h_max  = 500    #[nm]
-n_points = 100
-noise_std_P = np.linspace(0,4,10)
+n_points = 500
+noise_std_P = np.linspace(0,2,10)
 alpha = 0.05
 m = 1.25
 h_f = 0
@@ -169,26 +169,47 @@ h_f = 0
 
 popt_exp_g, cov_exp_g = [], []
 popt_exp, cov_exp = [], []
+popt_alpha, popt_m, popt_hf = [], [], []
 
 for i in noise_std_P:
     h = np.linspace(0, h_max, n_points)#[nm]
-    noise_P = np.random.normal(0, i, n_points)
-    P = alpha*(h - h_f)**m+noise_P     #[nN]
+    popt = np.empty([iterations,3])
     
-    for i in range(iterations):
+    for j in range(iterations):
+        noise_P = np.random.normal(0, i, n_points)
+        P = alpha*(h - h_f)**m+noise_P     #[nN]
         p, c = fitting(h, P, fit_range, start_param, fit_func=func_exp)
-        popt_exp.append(p)
+        popt[j]=p
     
-    a,m_t,h_t = 0,0,0
+    #print(np.std(popt[:,0]))
+    #print(np.mean(popt[:,0]))
+    #popt_exp has dimensions of noise_val x 3 and contains the standard deviations of alpha, m and h_f calculated over the number of iterations
+    #popt_exp.append([np.std(popt[:,0]), np.std(popt[:,1]), np.std(popt[:,2])])
+    popt_alpha.append(np.std(popt[:,0]))
+    popt_m.append(np.std(popt[:,1]))
+    popt_hf.append(np.std(popt[:,2]))
     
-    for i in popt_exp:
-        a += i[0]
-        m_t += i[1]
-        h_t += i[2]    
-    a = a/len(popt_exp)    
-    m_t = m_t/len(popt_exp)
-    h_f = h_f/len(popt_exp)
-    popt_exp_g.append([a,m_t,h_f])
+#print(popt_exp[0])
+plt.plot(noise_std_P, popt_alpha)
+plt.title('standard deviation of alpha as a function of noise level\n alpha=0,05')
+plt.xlabel('noise level in [nm]')
+plt.ylabel('standard deviation in [nm]')    
+
+    
+    
+    
+    
+    #popt_exp_g.append()
+    #a,m_t,h_t = 0,0,0
+    #calculate mean values (doesnt make sense)
+    # for i in popt_exp:
+    #     a += i[0]
+    #     m_t += i[1]
+    #     h_t += i[2]    
+    # a = a/len(popt_exp)    
+    # m_t = m_t/len(popt_exp)
+    # h_f = h_f/len(popt_exp)
+    #popt_exp_g.append([a,m_t,h_f])
     
 #%%
 ############################################################################# 
