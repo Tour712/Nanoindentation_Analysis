@@ -157,46 +157,62 @@ def calc_H(P_max, A):
 ############################################################################# 
 #evaluation of fitting algorithm
 
-iterations = 100
-start_param = (0.1,1.3,100)
+iterations = 200
+start_param = (0.1,1.3,0)
 h_max  = 500    #[nm]
-n_points = 500
+n_points = [100,200,300,400,500,1000]
 noise_std_P = np.linspace(0,2,10)
 alpha = 0.05
 m = 1.25
 h_f = 0
 
 
-popt_exp_g, cov_exp_g = [], []
+#popt_exp_g, cov_exp_g = [], []
 popt_exp, cov_exp = [], []
-popt_alpha, popt_m, popt_hf = [], [], []
+popt_std_alpha, popt_std_m, popt_std_hf = [], [], []
+popt_mean_alpha, popt_mean_m, popt_mean_hf = [], [], []
 
-for i in noise_std_P:
-    h = np.linspace(0, h_max, n_points)#[nm]
-    popt = np.empty([iterations,3])
+for k in n_points:
+    popt_std_alpha, popt_std_m, popt_std_hf = [], [], []
+    for i in noise_std_P:
+        h = np.linspace(0, h_max, k)#[nm]
+        popt = np.empty([iterations,3])
+        
+        for j in range(iterations):
+            noise_P = np.random.normal(0, i, k)
+            P = alpha*(h - h_f)**m+noise_P     #[nN]
+            p, c = fitting(h, P, fit_range, start_param, fit_func=func_exp)
+            popt[j]=p
+        
     
-    for j in range(iterations):
-        noise_P = np.random.normal(0, i, n_points)
-        P = alpha*(h - h_f)**m+noise_P     #[nN]
-        p, c = fitting(h, P, fit_range, start_param, fit_func=func_exp)
-        popt[j]=p
-    
-    #print(np.std(popt[:,0]))
-    #print(np.mean(popt[:,0]))
-    #popt_exp has dimensions of noise_val x 3 and contains the standard deviations of alpha, m and h_f calculated over the number of iterations
-    #popt_exp.append([np.std(popt[:,0]), np.std(popt[:,1]), np.std(popt[:,2])])
-    popt_alpha.append(np.std(popt[:,0]))
-    popt_m.append(np.std(popt[:,1]))
-    popt_hf.append(np.std(popt[:,2]))
-    
-#print(popt_exp[0])
-plt.plot(noise_std_P, popt_alpha)
-plt.title('standard deviation of alpha as a function of noise level\n alpha=0,05')
-plt.xlabel('noise level in [nm]')
-plt.ylabel('standard deviation in [nm]')    
-
+        popt_std_alpha.append((np.std(popt[:,0])/alpha)*100)
+        popt_std_m.append((np.std(popt[:,1])/m)*100)
+        popt_std_hf.append(np.std(popt[:,2]))
+        popt_mean_alpha.append(np.mean(popt[:,0]))
+        popt_mean_m.append(np.mean(popt[:,1]))
+        popt_mean_hf.append(np.mean(popt[:,2]))
     
     
+    plt.subplot(2,2,1)
+    plt.plot(noise_std_P, popt_std_alpha, label=str(k)+' datapoints')
+    plt.title('standard deviation of alpha as a function of noise level (alpha=0,05)')
+    plt.xlabel('noise level in [nm]')
+    plt.ylabel('standard deviation in [%]')   
+    plt.legend()
+    
+    plt.subplot(2,2,2)
+    plt.plot(noise_std_P, popt_std_m, label=str(k)+' datapoints')
+    plt.title('standard deviation of m as a function of noise level (m=1.25)')
+    plt.xlabel('noise level in [nm]')
+    plt.ylabel('standard deviation in [%]')     
+    plt.legend()
+    
+    plt.subplot(2,2,3)
+    plt.plot(noise_std_P, popt_std_hf, label=str(k)+' datapoints')
+    plt.title('standard deviation of hf as a function of noise level (hf=0)')
+    plt.xlabel('noise level [nm]')
+    plt.ylabel('standard deviation [nm]') 
+    plt.legend()    
     
     
     #popt_exp_g.append()

@@ -107,12 +107,7 @@ def data_splitting(Piezo_np,MEMS_np,time_np, index_start = 5):
     index_ul : int
         index of end of unload segment.
 
-    '''
-    # index_load = []
-    # index_hold = []
-    # index_uload = []
-    
-
+    '''  
 
     for index_l in range(index_start, len(Piezo_np)):
         piezo_del = Piezo_np[index_l]-Piezo_np[index_l-1]
@@ -163,7 +158,7 @@ def calc_hf(reversed_piezo, reversed_MEMS,fit_range_hf):
 #############################################################################
 #partial unload
 #data import and conversion
-path = 'data/partial unload on sapphire'
+path = 'data/partial unload on sapphire-3,50ms-2'
 Piezo, MEMS, time = imp_data(path)
 Piezo_np, MEMS_np, time_np = data_conversion(Piezo, MEMS, time)
 
@@ -199,12 +194,18 @@ while index[-1] < (len(Piezo_np)-1):
 # index_ul = [x - 1 for x in index_ul]
 
 plt.subplot(2,1,1)
-plt.plot(Piezo_np, ls = '', marker = "+", markersize = 2)
-plt.plot(index, np.take(Piezo_np, index), ls = '', marker = "o", label = 'segment boundarys')
+plt.plot(time_np ,Piezo_np, ls = '', marker = "+", markersize = 2)
+plt.plot(np.take(time_np, index), np.take(Piezo_np, index), ls = '', marker = "o", label = 'segment boundarys')
+plt.xlabel('Zeit [s]')
+plt.ylabel('Piezoposition [nm]')
 plt.legend()
+
 plt.subplot(2,1,2)
 plt.plot(Piezo_np, MEMS_np)
 plt.plot(np.take(Piezo_np, index), np.take(MEMS_np, index), ls = '', marker = "o", label = 'segment boundarys')
+plt.plot(np.take(Piezo_np, poc_i), np.take(MEMS_np, poc_i), ls = '', marker = "o", label = 'contact point')
+plt.xlabel('Piezoposition [nm]')
+plt.ylabel('MEMS Verschiebung [nm]')
 
 fig, ax = plt.subplots()
 ax.plot(Piezo_np, MEMS_np)
@@ -227,13 +228,13 @@ for i in range(len(index_l)):
     unload_Piezo.append(up[::-1])
     unload_MEMS.append(uM[::-1]) 
     if i==len(index_l):
-        #par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.3, 0.95], (1.0,1,0), fit_func=func_log)
+        par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.3, 0.95], (1.0,1,0), fit_func=func_log)
         #uncomment for power law fit
-        par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.4, 0.95], (1.0,1,0, 95), fit_func=func_exp)
+        #par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.4, 0.95], (1.0, 1.0, 95), fit_func=func_exp)
     else:         
-        #par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.3, 0.95], (1.0 ,1,0), fit_func=func_log) 
+        par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.3, 0.95], (1.0 ,1,0), fit_func=func_log) 
         #uncomment for power law fit
-        par, cov = fitting(unload_Piezo[i] , unload_MEMS[i], [0.4, 0.95], (1.0, 1.0 , 95), fit_func=func_exp)
+        #par, cov = fitting(unload_Piezo[i] , unload_MEMS[i], [0.4, 0.95], (1.0, 1.0 , 95), fit_func=func_exp)
     popt_log.append(par)
     pcov_log.append(cov)
     ax.plot(unload_Piezo[i], func_exp(unload_Piezo[i], par[0], par[1], par[2]), label = 'log fit' + str(i))
