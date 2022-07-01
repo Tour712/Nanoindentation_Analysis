@@ -194,16 +194,15 @@ while index[-1] < (len(Piezo_np)-1):
 # index_ul = [x - 1 for x in index_ul]
 
 plt.subplot(2,1,1)
-plt.plot(time_np ,Piezo_np, ls = '', marker = "+", markersize = 2)
-plt.plot(np.take(time_np, index), np.take(Piezo_np, index), ls = '', marker = "o", label = 'segment boundarys')
+plt.plot(time_np ,MEMS_np, ls = '', marker = "+", markersize = 2)
+plt.plot(np.take(time_np, index), np.take(MEMS_np, index), ls = '', marker = "o", label = 'segment boundarys')
 plt.xlabel('Zeit [s]')
-plt.ylabel('Piezoposition [nm]')
+plt.ylabel('MEMS Verschiebung [nm]')
 plt.legend()
 
 plt.subplot(2,1,2)
 plt.plot(Piezo_np, MEMS_np)
 plt.plot(np.take(Piezo_np, index), np.take(MEMS_np, index), ls = '', marker = "o", label = 'segment boundarys')
-plt.plot(np.take(Piezo_np, poc_i), np.take(MEMS_np, poc_i), ls = '', marker = "o", label = 'contact point')
 plt.xlabel('Piezoposition [nm]')
 plt.ylabel('MEMS Verschiebung [nm]')
 

@@ -4,7 +4,7 @@ save_data_on_exit = True
 save_history = True
 save_non_project_files = False
 project_type = 'empty-project-type'
-recent_files = ['pre_processing.py']
+recent_files = ['pre_processing_partial_unload.py', 'pre_processing.py', '\\\\fs.isb.pad.ptb.de\\fs\\Abt_5\\5\\5-1\\5-11\\Messungen\\2022\\06_Nico_MA\\05_Datenauswertung\\Python\\Nanoindentation Datenauswertung\\pre_processing_mod_mapping.py', '2D-fit.py']
 
 [main]
 version = 0.2.0
