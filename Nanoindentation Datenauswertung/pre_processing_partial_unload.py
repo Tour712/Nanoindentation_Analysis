@@ -158,7 +158,7 @@ def calc_hf(reversed_piezo, reversed_MEMS,fit_range_hf):
 #############################################################################
 #partial unload
 #data import and conversion
-path = 'data/partial unload on sapphire-3,50ms-2'
+path = 'data/partial unload on sapphire-4'
 Piezo, MEMS, time = imp_data(path)
 Piezo_np, MEMS_np, time_np = data_conversion(Piezo, MEMS, time)
 

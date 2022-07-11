@@ -54,6 +54,35 @@ def imp_data(path, column_names = ['Piezo_pos','Mems_displ','time','Cap']):
     del Cap[0:index+1]
     return Piezo, MEMS, time, Cap
 
+def split_array(Piezo , MEMS, time, Cap):
+    P, M, t, C = [], [], [], []
+    POC_list, POC_ind = [], []
+    X_val, Y_val = [], []
+    X_ind = []
+    
+    for ind, elem in enumerate(Piezo):
+        if elem == 'POC':
+            POC_list.append(Piezo[ind+1])
+            POC_ind.append(ind+1)
+        if elem == 'X-Pos [um]':
+            X_val.append(Piezo[ind+1])
+            Y_val.append(MEMS[ind+1])
+            X_ind.append(ind)
+            
+    for i,e in enumerate(POC_ind):
+        if i==(len(POC_ind)-1):
+            P.append(Piezo[POC_ind[i]+1:])        
+            M.append(MEMS[POC_ind[i]+1:])
+            t.append(time[POC_ind[i]+1:])
+            C.append(Cap[POC_ind[i]+1:])
+            
+        else:
+            P.append(Piezo[POC_ind[i]+1:X_ind[i+1]])        
+            M.append(MEMS[POC_ind[i]+1:X_ind[i+1]])
+            t.append(time[POC_ind[i]+1:X_ind[i+1]])
+            C.append(Cap[POC_ind[i]+1:X_ind[i+1]])
+        
+    return P, M, t, C, POC_list
 
 def data_conversion(Piezo, MEMS, time):
     '''
@@ -79,7 +108,7 @@ def data_conversion(Piezo, MEMS, time):
 def poc_detect(Piezo_np, MEMS_np, time_np):
     for index_poc, val in enumerate(MEMS_np):
         if (val) > 1.5:
-            return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:], index_poc
+            return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:]
             break
     
     
@@ -156,21 +185,71 @@ def calc_hf(reversed_piezo, reversed_MEMS,fit_range_hf):
 #############################################################################
 #partial unload
 #data import and conversion
-path = 'data/modulus mapping on saphir, 2x2'
-Piezo, MEMS, time, Cap = imp_data(path)
-print(MEMS[0:15])
-#Piezo_np, MEMS_np, time_np = data_conversion(Piezo, MEMS, time)
+path = 'data/array-partial unload'
+Piezo_, MEMS_, time_, Cap_ = imp_data(path)
+Piezo, MEMS, time, Cap, POC = split_array(Piezo_, MEMS_, time_, Cap_)
+print(POC)
 
-#Piezo offset position and conversion to [nm]
-# Piezo_np = (Piezo_np - Piezo_np[0])*1000
-# Piezo_np, MEMS_np, time_np, poc_i = poc_detect(Piezo_np, MEMS_np, time_np)
-# Data = np.array([Piezo_np, MEMS_np, time_np])   #3xn array containing all the data
 
-# #############################################################################
-# #split loading curve in load-, hold- and unload segment
 
-# #identify segment boundarys
-# index, index_l, index_h, index_ul = [],[],[],[]
+
+# detect POC
+
+Results = []
+
+for i, e in enumerate(Piezo):
+    
+    P, M, t = data_conversion(Piezo[i], MEMS[i], time[i])
+    # Piezo offset position and conversion to [nm]
+    P = (P - P[0])*1000
+    # detect POC
+    P, M, t = poc_detect(P, M, t)  
+    # store each measurement as np array in a list
+    Piezo[i], MEMS[i], time[i] = P, M, t
+    
+    # #detect indices of load, hold and unload segment
+    index, index_l, index_h, index_ul = [],[],[],[]
+    index = data_splitting(P, M, t)
+    index_l.append(data_splitting(P, M, t)[0])
+    index_h.append(data_splitting(P, M, t)[1])
+    index_ul.append(data_splitting(P, M, t)[2])
+    
+    #save end of segment index in list
+    while index[-1] < (len(P)-1):
+        ind = data_splitting(P, M, t, index_start= index[-1]+1)
+        index = index + ind
+        index_l.append(ind[0])
+        index_h.append(ind[1])
+        index_ul.append(ind[2])
+
+    # fit curve and calculate Results
+    unload_Piezo, unload_MEMS = [],[]
+    popt_log, pcov_log = [],[]
+    S = []
+    for i in range(len(index_l)):
+        up = P[index_h[i] : index_ul[i]]
+        uM = M[index_h[i] : index_ul[i]]
+        unload_Piezo.append(up[::-1])
+        unload_MEMS.append(uM[::-1]) 
+        
+        if i==len(index_l):
+            par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.3, 0.95], (1.0,1,0), fit_func=func_log)
+            #uncomment for power law fit
+            #par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.4, 0.95], (1.0, 1.0, 95), fit_func=func_exp)
+        else:         
+            par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.3, 0.95], (1.0 ,1,0), fit_func=func_log) 
+            #uncomment for power law fit
+            #par, cov = fitting(unload_Piezo[i] , unload_MEMS[i], [0.4, 0.95], (1.0, 1.0 , 95), fit_func=func_exp)
+        popt_log.append(par)
+        pcov_log.append(cov)
+        
+        S.append(calc_stiff(par, up[0]))
+    Results.append(S)   #Results is a list of lenth(number of array points), where each entry is a list of lenght(number of load cycles)
+
+
+#     ax.plot(unload_Piezo[i], func_exp(unload_Piezo[i], par[0], par[1], par[2]), label = 'log fit' + str(i))
+
+
 
 
 

@@ -193,7 +193,7 @@ for k in n_points:
         
         for j in range(iterations):
             noise_P = np.random.normal(0, 1, k)
-            P = P_opt + P_opt[-1]*(i/100) *noise_P    #[nmN] prozentual
+            P = P_opt + P_opt[-1]*((i/100) *noise_P)    #[mN] prozentual
             #P = P_opt + noise_P*0.001    #[mN] absolut
             p, c = fitting(h, P, fit_range, start_param, fit_func=func_exp)
             popt[j] = p
@@ -237,7 +237,7 @@ for k in n_points:
     plt.subplot(2,2,4)
     plt.plot(noise_std_P, S_std, label=str(k)+' datapoints')
     plt.title('standard deviation of S as a function of noise level (S=0.235)')
-    plt.xlabel('noise level [nm]')
+    plt.xlabel('noise level [%]')
     plt.ylabel('standard deviation [%]') 
     plt.legend() 
     
@@ -300,20 +300,14 @@ plt.legend()
 #%% 
 #############################################################################
 #data import and conversion
-path = 'data/test on saphire'
+path = 'data/2,3um'
+fit_range = [0.6, 0.95]
 Piezo, MEMS, time = imp_data(path)
 Piezo_np, MEMS_np, time_np = data_conversion(Piezo, MEMS, time)
 
 #Piezo offset position and conversion to [nm]
 Piezo_np = (Piezo_np - Piezo_np[0])*1000
 Data = np.array([Piezo_np, MEMS_np, time_np])   #3xn array containing all the data
-
-#############################################################################
-#split loading curve in load-, hold- and unload segment
-
-MEMS_grad = np.gradient(MEMS_np, ) 
-Piezo_grad = np.gradient(Piezo_np) 
-Piezo_curve = np.gradient(Piezo_grad) 
 
 #identify segment boundarys
 index_l, index_h, index_ul = data_splitting(Piezo_np, MEMS_np, time_np)    
@@ -331,7 +325,6 @@ popt_log, pcov_log = fitting(reversed_piezo, np.log(reversed_MEMS), fit_range, (
 popt_exp, pcov_exp = fitting(reversed_piezo, reversed_MEMS, fit_range, (0.1,1,0), fit_func=func_exp)
 popt_lin, pcov_lin = fitting(reversed_piezo, reversed_MEMS, fit_range, fit_func=func_lin)
 
-
 #plot fitting result and raw data
 plt.plot(reversed_piezo, reversed_MEMS, label='data')
 plt.plot(reversed_piezo, func_exp(reversed_piezo, popt_log[0], popt_log[1], popt_log[2]), label = 'log fit')
@@ -345,4 +338,17 @@ S = calc_stiff(popt_log, reversed_piezo[-1])
 
 
 #############################################################################
+#%%
+#data visualisation
+
+
+path = 'data/0,7um'
+Piezo, MEMS, time = imp_data(path)
+Piezo_np, MEMS_np, time_np = data_conversion(Piezo, MEMS, time)
+Piezo_np = (Piezo_np - Piezo_np[0])*1000
+
+plt.subplot(2,1,1)
+plt.plot(Piezo_np, MEMS_np)
+plt.subplot(2,1,2)
+plt.plot(time_np, MEMS_np)
 
