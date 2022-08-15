@@ -82,7 +82,7 @@ def split_array(Piezo , MEMS, time, Cap):
             t.append(time[POC_ind[i]+1:X_ind[i+1]])
             C.append(Cap[POC_ind[i]+1:X_ind[i+1]])
         
-    return P, M, t, C, POC_list
+    return P, M, t, C, POC_list, X_val, Y_val
 
 def data_conversion(Piezo, MEMS, time):
     '''
@@ -187,7 +187,7 @@ def calc_hf(reversed_piezo, reversed_MEMS,fit_range_hf):
 #data import and conversion
 path = 'data/array-partial unload'
 Piezo_, MEMS_, time_, Cap_ = imp_data(path)
-Piezo, MEMS, time, Cap, POC = split_array(Piezo_, MEMS_, time_, Cap_)
+Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
 print(POC)
 
 
@@ -196,6 +196,8 @@ print(POC)
 # detect POC
 
 Results = []
+indent_depth = []
+fit_param = []
 
 for i, e in enumerate(Piezo):
     
@@ -207,7 +209,9 @@ for i, e in enumerate(Piezo):
     # store each measurement as np array in a list
     Piezo[i], MEMS[i], time[i] = P, M, t
     
-    # #detect indices of load, hold and unload segment
+    #plt.plot(time[i], MEMS[i])
+    
+    #detect indices of load, hold and unload segment
     index, index_l, index_h, index_ul = [],[],[],[]
     index = data_splitting(P, M, t)
     index_l.append(data_splitting(P, M, t)[0])
@@ -224,27 +228,48 @@ for i, e in enumerate(Piezo):
 
     # fit curve and calculate Results
     unload_Piezo, unload_MEMS = [],[]
-    popt_log, pcov_log = [],[]
+    popt_log, pcov_log = np.array([i,])
     S = []
-    for i in range(len(index_l)):
-        up = P[index_h[i] : index_ul[i]]
-        uM = M[index_h[i] : index_ul[i]]
+    hmax = []
+    
+    for j in range(len(index_l)):
+        up = P[index_h[j] : index_ul[j]]
+        uM = M[index_h[j] : index_ul[j]]
         unload_Piezo.append(up[::-1])
         unload_MEMS.append(uM[::-1]) 
+        hmax.append(up[0])
+    
         
-        if i==len(index_l):
-            par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.3, 0.95], (1.0,1,0), fit_func=func_log)
+        if j==len(index_l):
+            par, cov = fitting(unload_Piezo[j] , np.log(unload_MEMS[j]), [0.2, 0.95], (1.0, 1,0), fit_func=func_log)
             #uncomment for power law fit
-            #par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.4, 0.95], (1.0, 1.0, 95), fit_func=func_exp)
+            #par, cov = fitting(unload_Piezo[j] , np.log(unload_MEMS[j]), [0.3, 0.95], (1.0, 1.0,1), fit_func=func_exp)
         else:         
-            par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.3, 0.95], (1.0 ,1,0), fit_func=func_log) 
+            par, cov = fitting(unload_Piezo[j] , np.log(unload_MEMS[j]), [0.3, 0.95], (1.0 ,1,0), fit_func=func_log) 
             #uncomment for power law fit
-            #par, cov = fitting(unload_Piezo[i] , unload_MEMS[i], [0.4, 0.95], (1.0, 1.0 , 95), fit_func=func_exp)
+            #par, cov = fitting(unload_Piezo[j] , unload_MEMS[j], [0.3, 0.95], (1.0, 1.0,1), fit_func=func_exp)
         popt_log.append(par)
         pcov_log.append(cov)
         
+       
         S.append(calc_stiff(par, up[0]))
-    Results.append(S)   #Results is a list of lenth(number of array points), where each entry is a list of lenght(number of load cycles)
+    fit_param.append(popt_log)
+    indent_depth.append(hmax)
+    Results.append(S)   #Results is a list of length(number of array points), where each entry is a list of lenght(number of load cycles)
+
+#plot results
+indent_depth = np.array(indent_depth)
+Results = np.array(Results)
+S_mean, S_std = [], []
+
+for i in range(5):
+    S_std.append(np.std(Results[:,i]))
+    S_mean.append(np.mean(Results[:,i]))
+    
+#plot stiffness versus indentation depth with errorbars    
+plt.errorbar(indent_depth[0], S_mean, yerr = S_std)
+plt.xlabel('h [nm]')
+plt.ylabel('Steifigkeit')
 
 
 #     ax.plot(unload_Piezo[i], func_exp(unload_Piezo[i], par[0], par[1], par[2]), label = 'log fit' + str(i))

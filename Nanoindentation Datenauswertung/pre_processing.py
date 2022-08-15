@@ -125,6 +125,9 @@ def func_exp(reversed_piezo, alpha, m, h_f):
 
 def func_log(reversed_piezo, alpha, m, h_f ):
     return np.log(alpha)+m*np.log(reversed_piezo-h_f)
+
+def func_hertz(Depth, E):
+    return (4/3)*10**(-9)*E*(15000**0.5)*Depth**(3/2)
     
 def fitting(reversed_piezo, reversed_MEMS, fit_range, *p0, fit_func=func_lin):
     start_index = int(len(reversed_piezo)*fit_range[0])
@@ -154,6 +157,13 @@ def calc_emod(S, A, beta=1.05, nu_s=0.3, E_t=1140, nu_t=0.07):
 
 def calc_H(P_max, A):
     return (P_max*10**-3)/(A*10**-12)
+
+##Hertz Analysis
+
+def calc_hertz(P, h, R=15000):
+    popt,pcov = curve_fit(func_hertz, h, P)
+    return popt
+    
 ############################################################################# 
 #evaluation of fitting algorithm
 
@@ -165,16 +175,17 @@ noise_std_P = np.linspace(0,4,10)
 alpha = 0.05    #in [mN/nm^m]
 m = 1.25
 h_f = 0
-h = np.linspace(0, h_max, 500)#[nm]
-P_opt = alpha*(h - h_f)**m
-
+h = np.linspace(30, h_max, 500)#[nm]
+P_opt = alpha*(h - h_f)**m 
+#P_t = (0.1)*(h + 10)**(1.1)
 S = calc_stiff([alpha, m , h_f], h_max)
 
 plt.plot (h, P_opt)
-plt.title('ideal Data')
+#plt.plot (h, P_n)
+plt.title('ideale Daten')
 plt.xlabel('h in [nm]')
 plt.ylabel('P in [mN]')   
-plt.legend()
+
 
 #popt_exp_g, cov_exp_g = [], []
 popt_exp, cov_exp = [], []
@@ -182,10 +193,13 @@ popt_std_alpha, popt_std_m, popt_std_hf = [], [], []
 popt_mean_alpha, popt_mean_m, popt_mean_hf = [], [], []
 S_std = []
 S_mean = []
+#%%
 
 for k in n_points:
     popt_std_alpha, popt_std_m, popt_std_hf = [], [], []
     S_std = []
+    h = np.linspace(0, h_max, k)#[nm]
+    P_opt = alpha*(h - h_f)**m
     for n,i in enumerate(noise_std_P):
         h = np.linspace(0, h_max, k)#[nm]
         popt = np.empty([iterations,3])
@@ -193,7 +207,7 @@ for k in n_points:
         
         for j in range(iterations):
             noise_P = np.random.normal(0, 1, k)
-            P = P_opt + P_opt[-1]*((i/100) *noise_P)    #[mN] prozentual
+            P = P_opt + (P_opt[-1]*(i/100)) *noise_P    #[mN] prozentual
             #P = P_opt + noise_P*0.001    #[mN] absolut
             p, c = fitting(h, P, fit_range, start_param, fit_func=func_exp)
             popt[j] = p
@@ -257,7 +271,7 @@ for k in n_points:
 ############################################################################# 
 #Hysitron sample file
 #depth in [nm] and load in [mN]
-path_2 = 'data/Hysitron.txt'
+path_2 = 'data/Test Measurement/Hysitron.txt'
 depth, load, time_2 = imp_data(path_2)
 depth_np, load_np, time_2_np = data_conversion(depth, load, time_2)
 index_poc = detect_poc(load_np, depth_np)
@@ -334,21 +348,4 @@ plt.legend()
 #############################################################################
 #calculate E-Module nad Hardness
 S = calc_stiff(popt_log, reversed_piezo[-1])
-
-
-
-#############################################################################
-#%%
-#data visualisation
-
-
-path = 'data/0,7um'
-Piezo, MEMS, time = imp_data(path)
-Piezo_np, MEMS_np, time_np = data_conversion(Piezo, MEMS, time)
-Piezo_np = (Piezo_np - Piezo_np[0])*1000
-
-plt.subplot(2,1,1)
-plt.plot(Piezo_np, MEMS_np)
-plt.subplot(2,1,2)
-plt.plot(time_np, MEMS_np)
 
