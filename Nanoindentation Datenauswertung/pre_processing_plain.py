@@ -154,7 +154,7 @@ def calc_hc(h_max, P_max, S, eps=0.762):
     h_c = h_max - h_s
     return h_c
 
-def calc_emod(S, A, beta=1.05, nu_s=0.3, E_t=1140, nu_t=0.07):
+def calc_emod(S, A, beta=1.05, nu_s=0.5, E_t=1140, nu_t=0.07):
     # S in [nN/nm], A in [nm^2]-> E in [nN/nm^2]
     # daher: E[nN/nm^2]*10^9= E[Pa]
     E_r = 10**9 *(S*np.sqrt(np.pi))/(2*beta*(np.sqrt(A)))
@@ -166,6 +166,7 @@ def calc_H(P_max, A):
 
 #Hertz Analysis
 
-def calc_hertz(P, h):
+def calc_hertz(P, h, nu_s=0.5, E_t=1140, nu_t=0.07):
     popt,pcov = curve_fit(func_hertz, h, P)
-    return popt
+    E = (1- nu_s**2)/(1/popt-(1-nu_t**2)/(E_t*10**9))  
+    return popt, E

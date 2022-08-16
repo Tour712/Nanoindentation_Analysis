@@ -18,19 +18,23 @@ def area_sphere(h_c, R=7500):
 
 #h_c = np.linspace(0,100,100)
 #plt.plot(h_c, area_sphere(7500, h_c))
+
+K = 3 # N/m
 #%%
 
 start_index = 0
 end_index = 300
 #PDMS Measurement
-K = 3 # N/m
 
-path = 'data/EM-PDMS-50-10-50-0,7um'
+
+path = 'data/PDMS/EM-PDMS-50-10-50-0,7um'
 Piezo, MEMS, time = imp_data(path)
-Piezo_np, MEMS_np, time_np = data_conversion(Piezo, MEMS, time)
+Piezo_np_raw, MEMS_np_raw, time_np_raw = data_conversion(Piezo, MEMS, time)
 
-Piezo_np = (Piezo_np - Piezo_np[0])*1000
-Piezo_np, MEMS_np, time_np, poc_i = poc_detect(Piezo_np, MEMS_np, time_np)
+Piezo_np_raw = (Piezo_np_raw - Piezo_np_raw[0])*1000
+Depth_raw = (Piezo_np_raw-MEMS_np_raw)-180
+Force_raw = MEMS_np_raw*K
+Piezo_np, MEMS_np, time_np, poc_i = poc_detect(Piezo_np_raw, MEMS_np_raw, time_np_raw)
 
 Depth = (Piezo_np-MEMS_np)-180
 Force = MEMS_np*K
@@ -54,8 +58,40 @@ print(h_c)
 E_Op, E_reduced_Op = calc_emod(S, area_sphere(h_c))
 
 
-E_hertz = calc_hertz(Force[start_index:end_index], Depth[start_index:end_index])
+E_hz_reduced, E_hz = calc_hertz(Force[start_index:end_index], Depth[start_index:end_index])
 
-plt.plot(Depth, Force)
-plt.plot(reversed_Depth, func_exp(reversed_Depth, popt_exp[0], popt_exp[1], popt_exp[2]))
-plt.plot(Depth[start_index:end_index], func_hertz(Depth[start_index:end_index], E_hertz))
+plt.subplot(2,1,1)
+plt.plot(Depth_raw, Force_raw, label='Messdaten')
+plt.plot(reversed_Depth, func_exp(reversed_Depth, popt_exp[0], popt_exp[1], popt_exp[2]), label='power-law Fit')
+plt.plot(Depth[start_index:end_index], func_hertz(Depth[start_index:end_index], E_hz), label='Hertz-Fit')
+plt.xlabel('Tiefe [nm]')
+plt.ylabel('Kraft [nN]')
+plt.legend()
+
+plt.subplot(2,1,2)
+plt.plot(time_np_raw, Force_raw)
+plt.xlabel('Zeit [s]')
+plt.ylabel('Kraft [nN]')
+
+#%%
+path = []
+
+for i in range(1,6):
+    path.append('data/PDMS/EM-PDMS-50-10-50-0,5um'+'-'+str(i))
+path.append('data/PDMS/EM-PDMS-50-10-50-0,3um')
+#path.append('data/PDMS/EM-PDMS-50-10-50-0,8um')
+path.append('data/PDMS/EM-PDMS-50-10-50-0,7um')
+    
+for i in path:
+   Piezo, MEMS, time = imp_data(i) 
+   Piezo_np_raw, MEMS_np_raw, time_np_raw = data_conversion(Piezo, MEMS, time)
+   Piezo_np_raw = (Piezo_np_raw - Piezo_np_raw[0])*1000
+   Piezo_np, MEMS_np, time_np, poc_i = poc_detect(Piezo_np_raw, MEMS_np_raw, time_np_raw)
+   Depth_raw = (Piezo_np_raw-MEMS_np_raw)
+   Force_raw = MEMS_np_raw*K
+   plt.plot(Depth_raw, Force_raw, label=i)
+   plt.xlabel('Tiefe [nm]')
+   plt.ylabel('Kraft [nN]')
+   #plt.title('EM-PDMS-50-10-50-0,5um')
+   plt.legend()
+
