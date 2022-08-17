@@ -314,7 +314,7 @@ plt.legend()
 #%% 
 #############################################################################
 #data import and conversion
-path = 'data/2,3um'
+path = 'data/Test Measurement/2,3um'
 fit_range = [0.6, 0.95]
 Piezo, MEMS, time = imp_data(path)
 Piezo_np, MEMS_np, time_np = data_conversion(Piezo, MEMS, time)

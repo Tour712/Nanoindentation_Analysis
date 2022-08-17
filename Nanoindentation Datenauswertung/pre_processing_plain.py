@@ -104,10 +104,11 @@ def data_splitting(Piezo_np,MEMS_np,time_np, index_start = 5):
         if abs(piezo_del) > 0.3:
             break
 
-    for index_ul in range(index_h,len(Piezo_np)):
-        piezo_del = Piezo_np[index_ul]-Piezo_np[index_ul-1]
-        if abs(piezo_del) < 0.3:
-            break
+    # for index_ul in range(index_h,len(MEMS_np)):
+    #     mems_del = MEMS_np[index_ul]-MEMS_np[index_ul-1]
+    #     if mems_del > 2:
+    #         break
+    index_ul = np.argmin(MEMS_np)
 
     return index_l, index_h, index_ul
  
@@ -139,9 +140,9 @@ def detect_poc(F, h, delta=3):
         if np.abs(value) > 0+delta:
             return index
         
-def poc_detect(Piezo_np, MEMS_np, time_np):
+def poc_detect(Piezo_np, MEMS_np, time_np, delta = 2):
     for index_poc, val in enumerate(MEMS_np):
-        if (val) > 1.5:
+        if np.abs(val) > 0+delta:
             return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:], index_poc
             break
         
