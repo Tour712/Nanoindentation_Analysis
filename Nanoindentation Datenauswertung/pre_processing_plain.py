@@ -10,10 +10,7 @@ import csv
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
-#create empty list for storing measurement data
-Piezo = []
-MEMS = []
-time = []
+
 
 poc = 0     #point of contact
 C_area = [24.5, 0]
@@ -34,7 +31,11 @@ def imp_data(path, column_names = ['Piezo_pos','Mems_displ','time']):
     return Parameters:
         Piezo, MEMS, time data as list
     '''
-   
+   #create empty list for storing measurement data
+    Piezo = []
+    MEMS = []
+    time = []
+    Cap = []
     with open(path) as f:
         raw_data = csv.DictReader(f, column_names, delimiter = '\t')    
         for line in raw_data:
