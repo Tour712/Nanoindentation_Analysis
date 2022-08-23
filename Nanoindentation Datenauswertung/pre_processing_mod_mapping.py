@@ -183,9 +183,10 @@ def calc_hf(reversed_piezo, reversed_MEMS,fit_range_hf):
     
 
 #############################################################################
+#%%
 #partial unload
 #data import and conversion
-path = 'data/array-partial unload'
+path = 'data/Test Measurement/array-partial unload'
 Piezo_, MEMS_, time_, Cap_ = imp_data(path)
 Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
 print(POC)
@@ -228,7 +229,7 @@ for i, e in enumerate(Piezo):
 
     # fit curve and calculate Results
     unload_Piezo, unload_MEMS = [],[]
-    popt_log, pcov_log = np.array([i,])
+    popt_log, pcov_log = [], []
     S = []
     hmax = []
     
@@ -253,7 +254,7 @@ for i, e in enumerate(Piezo):
         
        
         S.append(calc_stiff(par, up[0]))
-    fit_param.append(popt_log)
+    fit_param.append(popt_log) 
     indent_depth.append(hmax)
     Results.append(S)   #Results is a list of length(number of array points), where each entry is a list of lenght(number of load cycles)
 
@@ -273,6 +274,35 @@ plt.ylabel('Steifigkeit')
 
 
 #     ax.plot(unload_Piezo[i], func_exp(unload_Piezo[i], par[0], par[1], par[2]), label = 'log fit' + str(i))
+
+
+#%%
+
+path = 'data/S_calib/S_calib_2308-2x2'
+Piezo_, MEMS_, time_, Cap_ = imp_data(path)
+Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
+print(POC)
+
+Results = []
+indent_depth = []
+fit_param = []
+
+for i, e in enumerate(Piezo):
+    
+    P, M, t = data_conversion(Piezo[i], MEMS[i], time[i])
+    # Piezo offset position and conversion to [nm]
+    P = (P - P[0])*1000
+    plt.plot(P, M)
+    # detect POC
+    P, M, t = poc_detect(P, M, t)  
+    # store each measurement as np array in a list
+    Piezo[i], MEMS[i], time[i] = P, M, t
+    
+
+
+
+
+
 
 
 

@@ -34,30 +34,30 @@ drift = np.zeros(len(MEMS_np_raw))
 for i in range(len(MEMS_np_raw)-m*2):
     drift[i] = (MEMS_np_raw[i]-MEMS_np_raw[i+m*2])/m
     
-plt.subplot(2,1,1)
-plt.plot(time_np_raw[15:], drift[15:])
-plt.xlabel('Zeit [min]')
-plt.ylabel('Driftrate [nm/min]')
-plt.title('Drift Test')
-plt.legend()
+# plt.subplot(2,1,1)
+# plt.plot(time_np_raw[15:], drift[15:])
+# plt.xlabel('Zeit [min]')
+# plt.ylabel('Driftrate [nm/min]')
+# plt.title('Drift Test')
+# plt.legend()
 
-plt.subplot(2,1,2)
-plt.plot(time_np_raw, MEMS_np_raw)
-plt.xlabel('Zeit [min]')
-plt.ylabel('Verschiebung von Piezo/MEMS [nm]')
-plt.title('Drift Test')
-plt.legend()
+# plt.subplot(2,1,2)
+# plt.plot(time_np_raw, MEMS_np_raw)
+# plt.xlabel('Zeit [min]')
+# plt.ylabel('Verschiebung von Piezo/MEMS [nm]')
+# plt.title('Drift Test')
+# plt.legend()
 
-# fig, ax1 = plt.subplots()
-# ax1.plot(time_np_raw, MEMS_np_raw)
-# ax1.set_xlabel('X-axis')
-# ax1.set_ylabel('Y1-axis')
+fig, ax1 = plt.subplots()
+ax1.plot(time_np_raw, MEMS_np_raw)
+ax1.set_xlabel('X-axis')
+ax1.set_ylabel('Y1-axis')
 
-# ax2 = ax1.twinx()
-# ax2.plot(time_np_raw[0:1100], T_np_raw[0:1100], ls='-', markevery=100)
-# ax2.set_ylabel('Y2-axis')
+ax2 = ax1.twinx()
+ax2.plot(time_np_raw[0:1100], T_np_raw[0:1100], ls='-', markevery=100)
+ax2.set_ylabel('Y2-axis')
 
-# plt.show()
+plt.show()
 
 
 

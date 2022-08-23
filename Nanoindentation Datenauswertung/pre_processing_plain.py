@@ -141,10 +141,10 @@ def detect_poc(F, h, delta=3):
         if np.abs(value) > 0+delta:
             return index
         
-def poc_detect(Piezo_np, MEMS_np, time_np, delta = 2):
+def poc_detect(Piezo_np, MEMS_np, time_np, Cap_np, delta = 2):
     for index_poc, val in enumerate(MEMS_np):
         if np.abs(val) > 0+delta:
-            return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:], index_poc
+            return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:], Cap_np[index_poc:], index_poc
             break
         
 def calc_stiff(curve_param, h_max):
