@@ -279,6 +279,7 @@ plt.ylabel('Steifigkeit')
 #%%
 
 path = 'data/S_calib/S_calib_2308-2x2'
+path = 'data/PDMS/AR-PDMS-60-10-60-1,2um-3x3-1'
 Piezo_, MEMS_, time_, Cap_ = imp_data(path)
 Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
 print(POC)

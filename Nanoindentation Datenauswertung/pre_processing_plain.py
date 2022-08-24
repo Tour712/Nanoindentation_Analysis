@@ -23,7 +23,7 @@ fit_range = [0.4, 0.95]  #
 #############################################################################
 #functions
 
-def imp_data(path, column_names = ['Piezo_pos','Mems_displ','time']):
+def imp_data(path, column_names = ['Piezo_pos','Mems_displ','time', 'Cap']):
     '''
     read raw data into dictionary. Keywords are specified by the list 'column names'.
     Deletes Header lines
@@ -42,15 +42,17 @@ def imp_data(path, column_names = ['Piezo_pos','Mems_displ','time']):
             Piezo.append(line['Piezo_pos'])
             MEMS.append(line['Mems_displ'])
             time.append(line['time']) 
+            Cap.append(line['Cap'])
             #delete header lines           
     index = Piezo.index('eoh')
     del Piezo[0:index+1]   
     del MEMS[0:index+1]
     del time[0:index+1] 
-    return Piezo, MEMS, time
+    del Cap[0:index+1] 
+    return Piezo, MEMS, time, Cap
 
 
-def data_conversion(Piezo, MEMS, time):
+def data_conversion(Piezo, MEMS, time, Cap):
     '''
     Parameters
     ----------
@@ -69,7 +71,8 @@ def data_conversion(Piezo, MEMS, time):
         Piezo[i]= float(Piezo[i].replace(',','.'))   
         MEMS[i]= float(MEMS[i].replace(',','.')) 
         time[i]= float(time[i].replace(',','.'))
-    return np.array(Piezo), np.array(MEMS), np.array(time)
+        Cap[i]= float(Cap[i].replace(',','.'))
+    return np.array(Piezo), np.array(MEMS), np.array(time), np.array(Cap)
     
 def data_splitting(Piezo_np,MEMS_np,time_np, index_start = 5):
     '''
@@ -142,10 +145,13 @@ def detect_poc(F, h, delta=3):
             return index
         
 def poc_detect(Piezo_np, MEMS_np, time_np, Cap_np, delta = 2):
-    for index_poc, val in enumerate(MEMS_np):
-        if np.abs(val) > 0+delta:
-            return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:], Cap_np[index_poc:], index_poc
-            break
+    index_poc = np.argmin(MEMS_np[0:np.argmax(MEMS_np)])
+    return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:], Cap_np[index_poc:], index_poc
+    
+    # for index_poc, val in enumerate(MEMS_np):
+    #     if np.abs(val) > 0+delta:
+    #         return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:], Cap_np[index_poc:], index_poc
+    #         break
         
 def calc_stiff(curve_param, h_max):
     S = curve_param[1]*curve_param[0]*(h_max-curve_param[2])**(curve_param[1]-1)
@@ -172,3 +178,17 @@ def calc_hertz(P, h, nu_s=0.5, E_t=1140, nu_t=0.07):
     popt,pcov = curve_fit(func_hertz, h, P)
     E = (1- nu_s**2)/(1/popt-(1-nu_t**2)/(E_t*10**9))  
     return popt, E
+
+def find_nearest(Force, value=0):
+    delta = np.abs(Force-value)
+    return np.argmin(delta)
+    
+def calc_JKRp(Depth, Force, R=7500, nu_s=0.5, E_t=1140, nu_t=0.07):
+    P_adh = np.min(Force)
+    delta_adh = Depth[np.argmin(Force)]
+    index_st = np.argmax(Force)
+    index_end = np.argmin(Force)
+    delta_0 = Depth[index_st + find_nearest(Force[index_st:index_end])]
+    E_r = 10**9* ((-3*P_adh)/np.sqrt(R)) * ((3*(delta_0-delta_adh))/(1+4**(-2/3)))**-(3/2) 
+    E = (1- nu_s**2)/(1/E_r-(1-nu_t**2)/(E_t*10**9))
+    return E_r, E

@@ -65,7 +65,7 @@ def calc_S(Cap_np_raw, Piezo_np_raw, index_l):
 #%%
 # einfache Messung
 
-path = 'data/S_calib/S_calib_2208-2'
+path = 'data/S_calib/S_calib_2408-3'
 Piezo, MEMS, time, Cap = imp_data(path)
 Piezo_np_raw, MEMS_np_raw, time_np_raw, Cap_np_raw = data_conversion(Piezo, MEMS, time, Cap)
 
