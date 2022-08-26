@@ -16,7 +16,7 @@ poc = 0     #point of contact
 C_area = [24.5, 0]
 e_tip = 0
 nu_tip = 0
-
+K = 3 # N/m
 fit_range = [0.4, 0.95]  #
 
 
@@ -48,11 +48,15 @@ def imp_data(path, column_names = ['Piezo_pos','Mems_displ','time', 'Cap']):
     del Piezo[0:index+1]   
     del MEMS[0:index+1]
     del time[0:index+1] 
-    del Cap[0:index+1] 
-    return Piezo, MEMS, time, Cap
+    del Cap[0:index+1]  
+    
+    if Cap[10] is None:
+        return Piezo, MEMS, time
+    else:
+        return Piezo, MEMS, time, Cap
 
 
-def data_conversion(Piezo, MEMS, time, Cap):
+def data_conversion(Piezo, MEMS, time, Cap=0):
     '''
     Parameters
     ----------
@@ -67,12 +71,20 @@ def data_conversion(Piezo, MEMS, time, Cap):
     time: numpy array of float
 
     '''
-    for i in range(len(Piezo)):
-        Piezo[i]= float(Piezo[i].replace(',','.'))   
-        MEMS[i]= float(MEMS[i].replace(',','.')) 
-        time[i]= float(time[i].replace(',','.'))
-        Cap[i]= float(Cap[i].replace(',','.'))
-    return np.array(Piezo), np.array(MEMS), np.array(time), np.array(Cap)
+    if Cap == 0:
+        for i in range(len(Piezo)):
+            Piezo[i]= float(Piezo[i].replace(',','.'))   
+            MEMS[i]= float(MEMS[i].replace(',','.')) 
+            time[i]= float(time[i].replace(',','.'))
+        return np.array(Piezo), np.array(MEMS), np.array(time)
+    else:
+        for i in range(len(Piezo)):
+            Piezo[i]= float(Piezo[i].replace(',','.'))   
+            MEMS[i]= float(MEMS[i].replace(',','.')) 
+            time[i]= float(time[i].replace(',','.'))
+            Cap[i]= float(Cap[i].replace(',','.')) 
+        return np.array(Piezo), np.array(MEMS), np.array(time), np.array(Cap)
+        
     
 def data_splitting(Piezo_np,MEMS_np,time_np, index_start = 5):
     '''
@@ -117,6 +129,10 @@ def data_splitting(Piezo_np,MEMS_np,time_np, index_start = 5):
     return index_l, index_h, index_ul
  
 
+def area_sphere(h_c, R=7500):
+    A = np.pi*(2*R*h_c-h_c**2)
+    return A
+
 def area_func(h_c, C = [24.5, 0, 0]):
     A = C[0]*h_c**2 + C[1]*h_c**1 + C[2]*h_c**0.5
     return A        
@@ -137,7 +153,7 @@ def func_hertz(Depth, E):
 def fitting(reversed_piezo, reversed_MEMS, fit_range, *p0, fit_func=func_lin):
     start_index = int(len(reversed_piezo)*fit_range[0])
     end_index = int(len(reversed_piezo)*fit_range[1])
-    return curve_fit(fit_func, reversed_piezo[start_index:end_index], reversed_MEMS[start_index:end_index], *p0, maxfev=10000)
+    return curve_fit(fit_func, reversed_piezo[start_index:end_index], reversed_MEMS[start_index:end_index], *p0, maxfev=20000)
 
 def detect_poc(F, h, delta=3):
     for index, value in enumerate(F):

@@ -9,7 +9,7 @@ from pre_processing_plain import *
 
 
 path = 'data/MEMS Resolution Test/MEMS step test,0,5nm,10Hz-1'
-Piezo, MEMS, time = imp_data(path)
+Piezo, MEMS, time, Cap = imp_data(path)
 Piezo_np_raw, MEMS_np_raw, time_np_raw = data_conversion(Piezo, MEMS, time)
 
 Piezo_np_raw = (Piezo_np_raw - Piezo_np_raw[0])*1000
@@ -25,7 +25,7 @@ plt.legend()
 #%%
 #evaluate drift data
 path = 'data/Drift-2, pressure off, chuck not activated'
-MEMS, time, T = imp_data(path)
+MEMS, time, T, Cap = imp_data(path)
 MEMS_np_raw, time_np_raw, T_np_raw = data_conversion(MEMS, time, T)
 
 #calculate 5min drift
@@ -60,6 +60,7 @@ ax2.set_ylabel('Y2-axis')
 plt.show()
 
 #%%
+
 #analysis of MEMS step response
 path = ['data/MEMS Dynamik/1nm step','data/MEMS Dynamik/5nm step','data/MEMS Dynamik/10nm step','data/MEMS Dynamik/20nm step','data/MEMS Dynamik/50nm step', 'data/MEMS Dynamik/50nm step-2','data/MEMS Dynamik/100nm step','data/MEMS Dynamik/100nm step-2']
 relax = []
@@ -88,7 +89,7 @@ plt.plot(time_np, Piezo_np, label='Piezo')
 plt.xlabel('Zeit [s]')
 plt.ylabel('MEMS/Piezo Verschiebung [nm]')
 plt.yscale('linear')
-plt.title('Rampe MEMS')
+plt.title('Rampe MEMS'+'\n'+'file:'+path)
 plt.legend()
 
 

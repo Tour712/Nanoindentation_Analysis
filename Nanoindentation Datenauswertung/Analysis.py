@@ -12,14 +12,7 @@ from pre_processing_plain import *
 # from scipy.optimize import curve_fit
 
 
-def area_sphere(h_c, R=7500):
-    A = np.pi*(2*R*h_c-h_c**2)
-    return A
 
-#h_c = np.linspace(0,100,100)
-#plt.plot(h_c, area_sphere(7500, h_c))
-
-K = 3 # N/m
 fit_range = [0.6, 0.95]
 #%%
 
@@ -136,6 +129,7 @@ for i in range(1,6):
 path.append('data/PDMS/EM-PDMS-75-10-75-1,5um-1')
 #path.append('data/PDMS/EM-PDMS-50-10-50-0,8um')
 #path.append('data/PDMS/EM-PDMS-50-10-50-0,7um')
+
     
 for i in path:
    Piezo, MEMS, time, Cap = imp_data(i) 
@@ -151,30 +145,31 @@ for i in path:
    plt.legend()
    plt.subplot(2,1,2)
    plt.plot(Piezo_np_raw, Force_raw, label=i)
-   plt.xlabel('Zeit [s]')
+   plt.xlabel('Piezo [nm]')
    plt.ylabel('Kraft [nN]')
    plt.legend()
 
 
 #%%
 #hier sind noch einige Fehler!!!
-path = 'data/PDMS/EM-PDMS-75-10-75-1,5um-1'
+path = 'data/PDMS/EM-PDMS-120-10-120-0,8um-1'
 Piezo, MEMS, time, Cap = imp_data(path)
-Piezo_np_raw, MEMS_np_raw, time_np_raw, Cap_np_raw = data_conversion(Piezo, MEMS, time, Cap)
-Piezo_np_raw = (Piezo_np_raw - Piezo_np_raw[0])*1000
+Piezo_np, MEMS_np, time_np, Cap_np = data_conversion(Piezo, MEMS, time, Cap)
+Piezo_np = (Piezo_np - Piezo_np[0])*1000
 
-Force_raw = MEMS_np_raw*K
-Piezo_np, MEMS_np, time_np, Cap_np, poc_i = poc_detect(Piezo_np_raw, MEMS_np_raw, time_np_raw, Cap_np_raw)
-Depth_raw = (Piezo_np_raw - Piezo_np_raw[poc_i]) -MEMS_np_raw
-
-Depth = (Piezo_np-MEMS_np)-Piezo_np[poc_i]
 Force = MEMS_np*K
+P, M, t, C, poc_i = poc_detect(Piezo_np, MEMS_np, time_np, Cap_np)
+#poc_i = poc_i + find_nearest(Force[poc_i:np.argmax(Force)]) #point of contact moved to equilibrium force position F=0
 
-E_r_jkr, E_jkr = calc_JKRp(Depth_raw, Force_raw, R= 7500)
+Depth = Piezo_np - MEMS_np
+Depth = Depth - Depth[poc_i]
+
+E_r_jkr, E_jkr = calc_JKRp(Depth, Force, R= 7500)
+print(E_r_jkr)
 
 #identify segment boundarys
 index_l, index_h,index_ul = data_splitting(Piezo_np, MEMS_np, time_np)  
-index = np.array([poc_i, index_l+poc_i, index_h+poc_i, index_ul+poc_i]) 
+index = np.array([poc_i, index_l, index_h, index_ul]) 
 unload_Depth = Depth[index_h : index_ul+1]
 unload_Force = Force[index_h : index_ul+1] 
 
@@ -186,23 +181,24 @@ reversed_Force = unload_Force[::-1] #[nN]
 # S = calc_stiff(popt_exp, reversed_Depth[-1])    #[nN/nm]
 # h_c = calc_hc(reversed_Depth[-1], reversed_Force[-1], S, eps=0.774) #[nm]
 # E_Op, E_reduced_Op = calc_emod(S, area_sphere(h_c))
+idx_F0 = find_nearest(Force[poc_i:np.argmax(Force)])
 
-# #E_hz_reduced, E_hz = calc_hertz(Force[300:int(np.argmax(Force))], Depth[300:int(np.argmax(Force))])
+E_hz_reduced, E_hz = calc_hertz(Force[poc_i:np.argmax(Force)], Depth[poc_i:np.argmax(Force)])
 
 
 
 plt.subplot(2,1,1)
-plt.plot(Piezo_np_raw, MEMS_np_raw)
+plt.plot(Piezo_np, MEMS_np)
 plt.xlabel('Piezopositzion [nm]')
 plt.ylabel('MEMS Verschiebung [nm]')
-#plt.legend()
+plt.grid()
+
 
 plt.subplot(2,1,2)
-plt.plot(Depth_raw, Force_raw)
-plt.plot(np.take(Depth_raw, index), np.take(Force_raw, index), ls = '', marker = "o", label = 'segment boundarys')
-plt.plot(reversed_Depth, func_exp(reversed_Depth, popt_exp[0], popt_exp[1], popt_exp[2]), label='power-law Fit')
-plt.plot(Depth[7:int(np.argmax(Force)/3)], func_hertz(Depth[7:int(np.argmax(Force)/3)], E_hz_reduced), label='Hertz-Fit')
+plt.plot(Depth, Force)
+plt.plot(np.take(Depth, index), np.take(Force, index), ls = '', marker = "o", label = 'segment boundarys')
+#plt.plot(reversed_Depth, func_exp(reversed_Depth, popt_exp[0], popt_exp[1], popt_exp[2]), label='power-law Fit')
+plt.plot(Depth[poc_i:np.argmax(Force)], func_hertz(Depth[poc_i:np.argmax(Force)], E_hz_reduced), label='Hertz-Fit')
 plt.xlabel('Depth [nm]')
 plt.ylabel('Kraft [nN]')
 plt.grid()
-#plt.legend()

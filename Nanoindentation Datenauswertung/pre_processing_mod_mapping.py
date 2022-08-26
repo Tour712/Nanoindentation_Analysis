@@ -106,10 +106,14 @@ def data_conversion(Piezo, MEMS, time):
     return np.array(Piezo), np.array(MEMS), np.array(time)
 
 def poc_detect(Piezo_np, MEMS_np, time_np):
-    for index_poc, val in enumerate(MEMS_np):
-        if (val) > 1.5:
-            return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:]
-            break
+    index_poc = np.argmin(MEMS_np[0:np.argmax(MEMS_np)])
+    return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:], index_poc
+    
+    
+    # for index_poc, val in enumerate(MEMS_np):
+    #     if (val) > 1.5:
+    #         return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:]
+    #         break
     
     
 def data_splitting(Piezo_np,MEMS_np,time_np, index_start = 5):
@@ -189,12 +193,8 @@ def calc_hf(reversed_piezo, reversed_MEMS,fit_range_hf):
 path = 'data/Test Measurement/array-partial unload'
 Piezo_, MEMS_, time_, Cap_ = imp_data(path)
 Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
-print(POC)
+#print(POC)
 
-
-
-
-# detect POC
 
 Results = []
 indent_depth = []
@@ -206,7 +206,7 @@ for i, e in enumerate(Piezo):
     # Piezo offset position and conversion to [nm]
     P = (P - P[0])*1000
     # detect POC
-    P, M, t = poc_detect(P, M, t)  
+    P, M, t, poc = poc_detect(P, M, t)  
     # store each measurement as np array in a list
     Piezo[i], MEMS[i], time[i] = P, M, t
     
@@ -277,27 +277,60 @@ plt.ylabel('Steifigkeit')
 
 
 #%%
+from pre_processing_plain import *
+path = 'data/PDMS/AR-PDMS-60-10-60-1,2um-3x3-1'   
+path = 'data/PDMS/AR-PDMS-60-10-60-1,2um-4x4-1'
+path = 'data/PDMS/AR-PDMS-125-10-125-2,5um-diff_LF-5x5-1'
 
-path = 'data/S_calib/S_calib_2308-2x2'
-path = 'data/PDMS/AR-PDMS-60-10-60-1,2um-3x3-1'
 Piezo_, MEMS_, time_, Cap_ = imp_data(path)
 Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
-print(POC)
-
-Results = []
-indent_depth = []
-fit_param = []
-
-for i, e in enumerate(Piezo):
+#print(POC)
+n=5
+for i in range(5):
     
-    P, M, t = data_conversion(Piezo[i], MEMS[i], time[i])
+    P, M, t, C = data_conversion(Piezo[i+n], MEMS[i+n], time[i+n], Cap[i+n])
     # Piezo offset position and conversion to [nm]
-    P = (P - P[0])*1000
-    plt.plot(P, M)
     # detect POC
-    P, M, t = poc_detect(P, M, t)  
+    P_, M_, t_, C_, poc = poc_detect(P, M, t, C)  
+    P = (P - P[poc])*1000
+    plt.subplot(2,1,1)
+    plt.plot(P, M)
+    plt.xlabel('Piezo[nm]')
+    plt.ylabel('MEMS[nm]')
+    plt.grid(b=True)
+    plt.title(path)
     # store each measurement as np array in a list
     Piezo[i], MEMS[i], time[i] = P, M, t
+            
+    Force = M * 3
+    Depth = (P - M)
+    Depth = Depth - Depth[np.argmin(Force[0:np.argmax(Force)])]
+    plt.subplot(2,1,2)
+    plt.plot(Depth, Force)
+    plt.grid(b=True)
+    plt.xlabel('Eindringtiefe[nm]')
+    plt.ylabel('Kraft[nN]') 
+    
+    index_l, index_h, index_ul = data_splitting(P, M, t)
+    
+    unload_Depth = Depth[index_h : index_ul+1]
+    unload_Force = Force[index_h : index_ul+1] 
+
+    reversed_Depth = unload_Depth[::-1] #[nm]
+    reversed_Force = unload_Force[::-1] #[nN]
+    
+    #plot segment boundaries
+    index = [index_l, index_h, index_ul]
+    plt.plot(np.take(Depth, index), np.take(Force, index), ls = '', marker = "o", label = 'segment boundarys')
+    #calculations
+    # popt_exp, pcov_exp = fitting(reversed_Depth, reversed_Force, fit_range, fit_func=func_exp)
+    # S = calc_stiff(popt_exp, reversed_Depth[-1])    #[nN/nm]
+    # h_c = calc_hc(reversed_Depth[-1], reversed_Force[-1], S, eps=0.774) #[nm]
+    # E_Op, E_reduced_Op = calc_emod(S, area_sphere(h_c))
+    # print(E_Op)
+
+    # E_r_jkr, E_jkr = calc_JKRp(Depth, Force, R= 7500)
+    # print (E_r_jkr, E_jkr)
     
 
 
