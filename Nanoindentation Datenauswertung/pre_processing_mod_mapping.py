@@ -188,7 +188,7 @@ def calc_hf(reversed_piezo, reversed_MEMS,fit_range_hf):
 
 #############################################################################
 #%%
-#partial unload
+#partial unload+ mod mapping
 #data import and conversion
 path = 'data/Test Measurement/array-partial unload'
 Piezo_, MEMS_, time_, Cap_ = imp_data(path)
@@ -280,61 +280,129 @@ plt.ylabel('Steifigkeit')
 from pre_processing_plain import *
 path = 'data/PDMS/AR-PDMS-60-10-60-1,2um-3x3-1'   
 path = 'data/PDMS/AR-PDMS-60-10-60-1,2um-4x4-1'
-path = 'data/PDMS/AR-PDMS-125-10-125-2,5um-diff_LF-5x5-1'
 
-Piezo_, MEMS_, time_, Cap_ = imp_data(path)
-Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
-#print(POC)
-n=5
-for i in range(5):
+path = 'data/PDMS/AR-PDMS-125-10-125-2,5um-diff_LF-7x7-1'
+path = 'data/PDMS/AR-PDMS-125-10-125-2,5um-diff_LF-5x5-2'
+path = ['O:/5-1/5-11/Messungen/2022/06_Nico_MA/05_Datenauswertung/Python/Nanoindentation Datenauswertung/data/PDMS/AR-SA-600-1-600-4um-diff_LF-5x5-1']
+path = ['data/AR-SA-200-1-200-4um-diff_LF-4x4-1']
+path = ['data/AR-SA-600-1-600-4um-diff_LF-4x4-1']
+path = ['data/AR-SA-600-1-600-3,5um-diff_LF-4x4-2']
+path = ['data/AR-SA-335-1-335-2,5um-same_LF-5x5-2']
+path =['O:/5-1/5-11/Messungen/2022/06_Nico_MA/05_Datenauswertung/Python/Nanoindentation Datenauswertung/data/PDMS/AR-SA-600-1-600-4um-diff_LF-5x5-1','data/AR-SA-200-1-200-4um-diff_LF-4x4-1','data/AR-SA-600-1-600-4um-diff_LF-4x4-1', 'data/AR-SA-600-1-600-3,5um-diff_LF-4x4-2']
+
+#Piezo_, MEMS_, time_, Cap_ = imp_data(path)
+#Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
+# Piezo_1, MEMS_1, time_1, Cap_1 = imp_data(path1)
+# Piezo1, MEMS1, time1, Cap1, POC1, X_val1, Y_val1 = split_array(Piezo_1, MEMS_1, time_1, Cap_1)
+# Piezo.extend(Piezo1)
+# MEMS.extend(MEMS1)
+# time.extend(time1)
+# Cap.extend(Cap1)
+
+
+for a, j in enumerate(path):
+    Piezo_, MEMS_, time_, Cap_ = imp_data(j)
+    Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
+    S_load = []
+    S_uload = []
+    hmax = []
+    P_in = []
+    P_off = []
+    #print(POC)
+    n = 0
+    x = 1
+    if a==2:
+        s=3
+    else:
+        s=0
+    for i in range(len(Piezo)-s):
+               
+        P, M, t, C = data_conversion(Piezo[i*x+n], MEMS[i*x+n], time[i*x+n], Cap[i*x+n])
+        # Piezo offset position and conversion to [nm]
+        # detect POC
+        P_, M_, t_, C_, poc = poc_detect(P, M, t, C)  
+        P = (P )*1000
     
-    P, M, t, C = data_conversion(Piezo[i+n], MEMS[i+n], time[i+n], Cap[i+n])
-    # Piezo offset position and conversion to [nm]
-    # detect POC
-    P_, M_, t_, C_, poc = poc_detect(P, M, t, C)  
-    P = (P - P[poc])*1000
-    plt.subplot(2,1,1)
-    plt.plot(P, M)
-    plt.xlabel('Piezo[nm]')
-    plt.ylabel('MEMS[nm]')
+        # store each measurement as np array in a list
+        Piezo[i], MEMS[i], time[i] = P, M, t
+                
+        Force = M * 3
+        Depth = (P - M)
+        Depth = Depth - Depth[np.argmin(Force[0:np.argmax(Force)])]
+        # plt.subplot(2,1,2)
+        # plt.plot(M, Force, label = str(i))
+        # plt.grid(b=True)
+        # plt.xlabel('Eindringtiefe[nm]')
+        # plt.ylabel('Kraft[nN]') 
+        # plt.legend()
+        
+        index_l, index_h, index_ul = data_splitting(P, M, t)
+        
+        unload_Depth = Depth[index_h : index_ul+1]
+        unload_Force = Force[index_h : index_ul+1] 
+    
+        reversed_Depth = unload_Depth[::-1] #[nm]
+        reversed_Force = unload_Force[::-1] #[nN]
+        
+        unload_Piezo = P[index_h : index_ul+1]
+        unload_MEMS = M[index_h : index_ul+1] 
+    
+        reversed_Piezo = unload_Piezo[::-1] #[nm]
+        reversed_MEMS = unload_MEMS[::-1] #[nN]
+        
+        #plot segment boundaries
+        index = [index_l, index_h, index_ul]
+        #calculations
+        #popt_exp, pcov_exp = fitting(reversed_Piezo, reversed_MEMS, fit_range, fit_func=func_exp)
+        popt_load, pcov_load = curve_fit(func_lin, P[poc:index_l], M[poc:index_l], (0.0,0.95))
+        popt_uload, pcov_uload = curve_fit(func_lin, reversed_Piezo, reversed_MEMS, (0.0,0.95))
+        P = P + popt_uload[1]
+        S_uload.append(popt_uload[0])
+        S_load.append(popt_load[0])
+        hmax.append(np.max(P))
+        P_in.append(Force[poc])
+        P_off.append(Force[index_ul])
+
+        #S = calc_stiff(popt_exp, reversed_Piezo[-1])    #[nN/nm]
+        # h_c = calc_hc(reversed_Depth[-1], reversed_Force[-1], S, eps=0.774) #[nm]
+        # E_Op, E_reduced_Op = calc_emod(S, area_sphere(h_c))
+        # print(E_Op)
+    
+        # E_r_jkr, E_jkr = calc_JKRp(Depth, Force, R= 7500)
+        # print (E_r_jkr, E_jkr)
+        
+
+        plt.subplot(3,1,1)
+        plt.plot(P, M)
+        plt.plot(np.take(P, index), np.take(M, index), ls = '', marker = "o")
+        plt.xlabel('Piezo[nm]')
+        plt.ylabel('MEMS[nm]')
+        plt.grid(b=True)
+        plt.title(path)  
+        
+    plt.subplot(3,1,2)
+    plt.plot(hmax, S_load, marker = '.',label='from load segment'+str(a))
+    plt.plot(hmax, S_uload, marker = '.', label='from unload segment')
     plt.grid(b=True)
-    plt.title(path)
-    # store each measurement as np array in a list
-    Piezo[i], MEMS[i], time[i] = P, M, t
-            
-    Force = M * 3
-    Depth = (P - M)
-    Depth = Depth - Depth[np.argmin(Force[0:np.argmax(Force)])]
-    plt.subplot(2,1,2)
-    plt.plot(Depth, Force)
+    plt.xlabel('Z-max [nm]')
+    plt.ylabel('relative Steigfigkeit') 
+    plt.legend()
+    
+    plt.subplot(3,1,3)
+    plt.plot(hmax, P_off, marker = '.', label ='Messung'+str(a))
+    #plt.plot(hmax, P_in, marker = '.', label ='snap-in')
     plt.grid(b=True)
-    plt.xlabel('Eindringtiefe[nm]')
-    plt.ylabel('Kraft[nN]') 
+    plt.xlabel('Z-max [nm]')
+    plt.ylabel('pull-off [nN]') 
+    plt.legend()
     
-    index_l, index_h, index_ul = data_splitting(P, M, t)
-    
-    unload_Depth = Depth[index_h : index_ul+1]
-    unload_Force = Force[index_h : index_ul+1] 
-
-    reversed_Depth = unload_Depth[::-1] #[nm]
-    reversed_Force = unload_Force[::-1] #[nN]
-    
-    #plot segment boundaries
-    index = [index_l, index_h, index_ul]
-    plt.plot(np.take(Depth, index), np.take(Force, index), ls = '', marker = "o", label = 'segment boundarys')
-    #calculations
-    # popt_exp, pcov_exp = fitting(reversed_Depth, reversed_Force, fit_range, fit_func=func_exp)
-    # S = calc_stiff(popt_exp, reversed_Depth[-1])    #[nN/nm]
-    # h_c = calc_hc(reversed_Depth[-1], reversed_Force[-1], S, eps=0.774) #[nm]
-    # E_Op, E_reduced_Op = calc_emod(S, area_sphere(h_c))
-    # print(E_Op)
-
-    # E_r_jkr, E_jkr = calc_JKRp(Depth, Force, R= 7500)
-    # print (E_r_jkr, E_jkr)
-    
-
-
-
+    # plt.subplot(3,1,3)
+    # plt.plot(hmax, P_in, marker = '.', label ='pull-in')
+    # #plt.plot(hmax, P_in, marker = '.', label ='snap-in')
+    # plt.grid(b=True)
+    # plt.xlabel('Z-max [nm]')
+    # plt.ylabel('Ahäsionskraft [nN]') 
+    # plt.legend()
 
 
 

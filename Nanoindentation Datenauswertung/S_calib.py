@@ -65,7 +65,8 @@ def calc_S(Cap_np_raw, Piezo_np_raw, index_l):
 #%%
 # einfache Messung
 
-path = 'data/S_calib/S_calib_2408-3'
+path = 'data/S_calib/S_calib_3008-1'
+
 Piezo, MEMS, time, Cap = imp_data(path)
 Piezo_np_raw, MEMS_np_raw, time_np_raw, Cap_np_raw = data_conversion(Piezo, MEMS, time, Cap)
 
@@ -81,8 +82,8 @@ popt_lin,cov = curve_fit(func_lin, Piezo_np_raw[0:index_l-1], Cap_np_raw[0:index
 #linear fit for unload segment
 popt_lin2,cov2 = curve_fit(func_lin, Piezo_np_raw[index_h:][::-1], Cap_np_raw[index_h:][::-1], maxfev=10000)
 
-# plt.plot(Piezo_np_raw, MEMS_np_raw)
-# plt.plot([Piezo_np_raw[index_h]], [MEMS_np_raw[index_h]], marker = "o" )
+#plt.plot(Piezo_np_raw, MEMS_np_raw)
+#plt.plot([Piezo_np_raw[index_h]], [MEMS_np_raw[index_h]], marker = "o" )
 plt.subplot(2,1,1)
 plt.plot(Piezo_np_raw, Cap_np_raw, label ='Messdaten')
 plt.plot(Piezo_np_raw, func_lin(Piezo_np_raw, popt_lin[0], popt_lin[1]), label ='Fit-Daten')
@@ -99,7 +100,7 @@ plt.xlabel('Piezoposition [nm]')
 plt.ylabel('Residuen [nm]')
 plt.legend()
 
-
+ 
 
 #%%
 # Arraymessung
@@ -107,7 +108,6 @@ plt.legend()
 path = 'data/S_calib/S_calib_2308-3x3'
 Piezo_, MEMS_, time_, Cap_ = imp_data(path)
 Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
-print(POC)
 
 Results = []
 indent_depth = []
