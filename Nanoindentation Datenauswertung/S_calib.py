@@ -65,7 +65,7 @@ def calc_S(Cap_np_raw, Piezo_np_raw, index_l):
 #%%
 # einfache Messung
 
-path = 'data/S_calib/S_calib_3008-1'
+path = 'data/S_calib/S_calib_0509-3'
 
 Piezo, MEMS, time, Cap = imp_data(path)
 Piezo_np_raw, MEMS_np_raw, time_np_raw, Cap_np_raw = data_conversion(Piezo, MEMS, time, Cap)
@@ -100,7 +100,6 @@ plt.xlabel('Piezoposition [nm]')
 plt.ylabel('Residuen [nm]')
 plt.legend()
 
- 
 
 #%%
 # Arraymessung

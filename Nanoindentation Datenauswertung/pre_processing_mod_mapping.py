@@ -288,8 +288,13 @@ path = ['data/AR-SA-200-1-200-4um-diff_LF-4x4-1']
 path = ['data/AR-SA-600-1-600-4um-diff_LF-4x4-1']
 path = ['data/AR-SA-600-1-600-3,5um-diff_LF-4x4-2']
 path = ['data/AR-SA-335-1-335-2,5um-same_LF-5x5-2']
-path =['O:/5-1/5-11/Messungen/2022/06_Nico_MA/05_Datenauswertung/Python/Nanoindentation Datenauswertung/data/PDMS/AR-SA-600-1-600-4um-diff_LF-5x5-1','data/AR-SA-200-1-200-4um-diff_LF-4x4-1','data/AR-SA-600-1-600-4um-diff_LF-4x4-1', 'data/AR-SA-600-1-600-3,5um-diff_LF-4x4-2']
-
+path = ['data/AR-SA-300-1-300-2um-diff_LF-4x4-3']
+path = ['data/AR-SA-450-1-450-3um-diff_LF-4x4-1']
+path = ['data/AR-SA-450-1-450-3um-diff_LF-5x5-1']
+path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2']
+path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2']
+#path =['O:/5-1/5-11/Messungen/2022/06_Nico_MA/05_Datenauswertung/Python/Nanoindentation Datenauswertung/data/PDMS/AR-SA-600-1-600-4um-diff_LF-5x5-1','data/AR-SA-200-1-200-4um-diff_LF-4x4-1','data/AR-SA-600-1-600-4um-diff_LF-4x4-1', 'data/AR-SA-600-1-600-3,5um-diff_LF-4x4-2', 'data/AR-SA-300-1-300-2um-diff_LF-4x4-3']
+path = ['data/AR-SA-450-1-450-3um-diff_LF-4x4-1', 'data/AR-SA-450-1-450-3um-diff_LF-5x5-1', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2' ,'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2']   #Messungen mit neuen MEMS
 #Piezo_, MEMS_, time_, Cap_ = imp_data(path)
 #Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
 # Piezo_1, MEMS_1, time_1, Cap_1 = imp_data(path1)
@@ -311,7 +316,7 @@ for a, j in enumerate(path):
     #print(POC)
     n = 0
     x = 1
-    if a==2:
+    if a==3:
         s=3
     else:
         s=0
@@ -381,8 +386,8 @@ for a, j in enumerate(path):
         plt.title(path)  
         
     plt.subplot(3,1,2)
-    plt.plot(hmax, S_load, marker = '.',label='from load segment'+str(a))
-    plt.plot(hmax, S_uload, marker = '.', label='from unload segment')
+    #plt.plot(hmax, S_load, marker = '.',label='from load segment'+str(a))
+    plt.plot(hmax, S_uload, marker = '.', label='Messung'+ str(a))
     plt.grid(b=True)
     plt.xlabel('Z-max [nm]')
     plt.ylabel('relative Steigfigkeit') 
@@ -396,13 +401,6 @@ for a, j in enumerate(path):
     plt.ylabel('pull-off [nN]') 
     plt.legend()
     
-    # plt.subplot(3,1,3)
-    # plt.plot(hmax, P_in, marker = '.', label ='pull-in')
-    # #plt.plot(hmax, P_in, marker = '.', label ='snap-in')
-    # plt.grid(b=True)
-    # plt.xlabel('Z-max [nm]')
-    # plt.ylabel('Ahäsionskraft [nN]') 
-    # plt.legend()
 
 
 
