@@ -85,6 +85,36 @@ def data_conversion(Piezo, MEMS, time, Cap=0):
             Cap[i]= float(Cap[i].replace(',','.')) 
         return np.array(Piezo), np.array(MEMS), np.array(time), np.array(Cap)
         
+def split_array(Piezo , MEMS, time, Cap):
+    P, M, t, C = [], [], [], []
+    POC_list, POC_ind = [], []
+    X_val, Y_val = [], []
+    X_ind = []
+    
+    for ind, elem in enumerate(Piezo):
+        if elem == 'POC':
+            POC_list.append(Piezo[ind+1])
+            POC_ind.append(ind+1)
+        if elem == 'X-Pos [um]':
+            X_val.append(Piezo[ind+1])
+            Y_val.append(MEMS[ind+1])
+            X_ind.append(ind)
+            
+    for i,e in enumerate(POC_ind):
+        if i==(len(POC_ind)-1):
+            P.append(Piezo[POC_ind[i]+1:])        
+            M.append(MEMS[POC_ind[i]+1:])
+            t.append(time[POC_ind[i]+1:])
+            C.append(Cap[POC_ind[i]+1:])
+            
+        else:
+            P.append(Piezo[POC_ind[i]+1:X_ind[i+1]])        
+            M.append(MEMS[POC_ind[i]+1:X_ind[i+1]])
+            t.append(time[POC_ind[i]+1:X_ind[i+1]])
+            C.append(Cap[POC_ind[i]+1:X_ind[i+1]])
+        
+    return P, M, t, C, POC_list, X_val, Y_val     
+
     
 def data_splitting(Piezo_np,MEMS_np,time_np, index_start = 5):
     '''
@@ -120,13 +150,25 @@ def data_splitting(Piezo_np,MEMS_np,time_np, index_start = 5):
         if abs(piezo_del) > 0.3:
             break
 
+    for index_ul in range(index_h, len(Piezo_np)):
+        piezo_del = Piezo_np[index_ul]-Piezo_np[index_ul-1]
+        if abs(piezo_del) < 0.3:
+            break
+    
+    if index_ul>np.argmin(MEMS_np):
+        index_ul = np.argmin(MEMS_np)
+        
+    return [index_l, index_h, index_ul]
+        
+    
+    
+
     # for index_ul in range(index_h,len(MEMS_np)):
     #     mems_del = MEMS_np[index_ul]-MEMS_np[index_ul-1]
     #     if mems_del > 2:
     #         break
-    index_ul = np.argmin(MEMS_np)
 
-    return index_l, index_h, index_ul
+
  
 
 def area_sphere(h_c, R=7500):
@@ -160,9 +202,14 @@ def detect_poc(F, h, delta=3):
         if np.abs(value) > 0+delta:
             return index
         
-def poc_detect(Piezo_np, MEMS_np, time_np, Cap_np, delta = 2):
+def poc_detect(Piezo_np, MEMS_np, time_np, Cap_np=['str'], delta = 2):
     index_poc = np.argmin(MEMS_np[0:np.argmax(MEMS_np)])
-    return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:], Cap_np[index_poc:], index_poc
+    if Cap_np[0]=='str':
+        return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:], index_poc
+    else:
+        return Piezo_np[index_poc:], MEMS_np[index_poc:], time_np[index_poc:],Cap_np[index_poc:], index_poc
+        
+    
     
     # for index_poc, val in enumerate(MEMS_np):
     #     if np.abs(val) > 0+delta:
@@ -208,3 +255,8 @@ def calc_JKRp(Depth, Force, R=7500, nu_s=0.5, E_t=1140, nu_t=0.07):
     E_r = 10**9* ((-3*P_adh)/np.sqrt(R)) * ((3*(delta_0-delta_adh))/(1+4**(-2/3)))**-(3/2) 
     E = (1- nu_s**2)/(1/E_r-(1-nu_t**2)/(E_t*10**9))
     return E_r, E
+
+#Für Kalibrierung de Kapazitäts-Verschiebung Koeffizienten
+def calc_S(Cap_np_raw, Piezo_np_raw, index_l):
+    S = (Cap_np_raw[index_l-1]-Cap_np_raw[0])/(Piezo_np_raw[index_l-1]-Piezo_np_raw[0])
+    return S

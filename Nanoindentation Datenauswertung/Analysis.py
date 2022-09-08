@@ -6,12 +6,6 @@ Created on Wed Jun  8 15:32:01 2022
 """
 
 from pre_processing_plain import *
-# import numpy as np
-# import csv
-# import matplotlib.pyplot as plt
-# from scipy.optimize import curve_fit
-
-
 
 fit_range = [0.6, 0.95]
 #%%
