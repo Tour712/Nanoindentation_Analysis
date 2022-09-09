@@ -140,7 +140,6 @@ path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']
 # time.extend(time1)
 # Cap.extend(Cap1)
 
-
 for a, j in enumerate(path):
     Piezo_, MEMS_, time_, Cap_ = imp_data(j)
     Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
@@ -149,7 +148,6 @@ for a, j in enumerate(path):
     hmax = []
     P_in = []
     P_off = []
-    #print(POC)
     n = 0
     x = 1
     if a==3:
