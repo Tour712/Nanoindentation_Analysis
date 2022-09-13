@@ -5,7 +5,7 @@ Created on Mon Sep  5 14:25:42 2022
 @author: eim01
 """
 
-from pre_processing_plain import *
+from functions import *
 
 def JKR_fit1(P, a_0, h_contact, P_adh):
     R = 7500

@@ -5,7 +5,7 @@ Created on Wed Aug 17 13:44:25 2022
 @author: eim01
 """
 
-from pre_processing_plain import *
+from functions import *
 import scipy.ndimage as ndi
 
 #Test step resolution

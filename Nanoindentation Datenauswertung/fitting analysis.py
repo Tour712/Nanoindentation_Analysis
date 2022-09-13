@@ -4,7 +4,7 @@ Created on Mon Aug 15 10:41:47 2022
 
 @author: eim01
 """
-from pre_processing_plain import *
+from functions import *
 import numpy as np
 #evaluation of fitting algorithm
 

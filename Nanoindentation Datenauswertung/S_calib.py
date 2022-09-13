@@ -7,7 +7,7 @@ Created on Thu Aug 18 09:41:51 2022
 
 
 #from pre_processing_mod_mapping import split_array
-from pre_processing_plain import *
+from functions import *
 
 
     
