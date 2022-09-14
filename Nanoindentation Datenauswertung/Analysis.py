@@ -14,7 +14,7 @@ fit_range = [0.6, 0.95]
 
 path = ['data/PDMS/EM-PDMS-120-10-120-0,8um-1','data/PDMS/EM-PDMS-120-10-120-1,2um-1' ]
 
-path = ['data/PDMS/12.09/EM-PDMS-110-10-110, 20nms,2,2um-2', 'data/PDMS/12.09/EM-PDMS-125-10-125, 20nms,2,5um-3', 'data/PDMS/12.09/EM-PDMS-150-10-150, 20nms,3um-4']
+path = ['data/PDMS/12.09/EM-PDMS-110-10-110, 20nms,2,2um-2', 'data/PDMS/12.09/EM-PDMS-125-10-125, 20nms,2,5um-3', 'data/PDMS/12.09/EM-PDMS-150-10-150, 20nms,3um-4']#,'data/PDMS/13.09/EM-PDMS-150-10-150-20nms-3um-5']
 
     
 for i in path:
@@ -25,7 +25,7 @@ for i in path:
    Force = MEMS_np*K
    Depth = (Piezo_np-MEMS_np)
    Depth = Depth - Depth[poc_i]
-
+   print(calc_JKRp(Depth, Force, R= 7500))
    plt.subplot(2,1,1)
    plt.plot(Piezo_np, Force, label=i)
    plt.xlabel('Piezo [nm]')

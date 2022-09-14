@@ -274,8 +274,12 @@ for i in range(len(index_l)-n):
 #This script is for the analysis of an array measurement on PDMS, with partial unload load function
 
 path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,5x1'
-path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,5x1-3'
-#path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,5x1-4'
+#path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,5x1-3'
+path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,5x1-4'
+path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,9x1-5'
+path = 'data/PDMS/14.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,25%,9x1-6'
+path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,20nms,9cycles,1,5um offset,75%,5x1-7'
+path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,7nms,9cycles,1,5um offset,75%,5x1-8'
 
 Piezo_, MEMS_, time_, Cap_ = imp_data(path)
 Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
@@ -286,8 +290,9 @@ P_in = []
 P_off = []
 S_l, S_e, S_linear = [],[],[]
 E_r_JKR, E_JKR = [],[]
-
-for j in range(len(Piezo)):
+s = 1 #skip first s measurement
+for j in range(len(Piezo)-s):
+    j=j+s
     
     P, M, t, C = data_conversion(Piezo[j], MEMS[j], time[j], Cap[j])
     Force = M*K
@@ -351,14 +356,23 @@ for j in range(len(Piezo)):
     
         if i==(len(index_l)-1):
             par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.8, 0.95])
-            #par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.8, 1], fit_func=func_log)
+            
+            try:
+                par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.8, 1], fit_func=func_log)
+            except RuntimeError:
+                print("Error - curve_fit failed")
+                
             try:
                 par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0.8, 0.95], fit_func=func_exp)
             except RuntimeError:
                 print("Error - curve_fit failed")
         else:         
             par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.1, 0.95])
-            #par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.1, 0.95], fit_func=func_log)
+            try:
+                par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.1, 0.95], fit_func=func_log)
+            except RuntimeError:
+                print("Error - curve_fit failed")
+            
             try:
                 par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0.1, 0.95], fit_func=func_exp)
             except RuntimeError:
@@ -375,12 +389,14 @@ for j in range(len(Piezo)):
     
     S_l.append(S_log)
     S_e.append(S_exp)
-    S_linear.append(popt_lin[0])
+    S_linear.append(popt_lin)
 
 S_mean = []
 S_std = []
 cycles = np.arange(0,9,1)
 S_e = np.array(S_e)
+S_l = np.array(S_l)
+S_linear = np.array(S_linear)
 for i in range(len(S_e[0])):
     S_mean.append(np.mean(S_e[:,i]))
     S_std.append(np.std(S_e[:,i]))

@@ -129,17 +129,10 @@ path = ['data/AR-SA-450-1-450-3um-diff_LF-5x5-1']
 path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2']
 path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2']
 path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']
-#path =['O:/5-1/5-11/Messungen/2022/06_Nico_MA/05_Datenauswertung/Python/Nanoindentation Datenauswertung/data/PDMS/AR-SA-600-1-600-4um-diff_LF-5x5-1','data/AR-SA-200-1-200-4um-diff_LF-4x4-1','data/AR-SA-600-1-600-4um-diff_LF-4x4-1', 'data/AR-SA-600-1-600-3,5um-diff_LF-4x4-2', 'data/AR-SA-300-1-300-2um-diff_LF-4x4-3']
+path =['O:/5-1/5-11/Messungen/2022/06_Nico_MA/05_Datenauswertung/Python/Nanoindentation Datenauswertung/data/PDMS/AR-SA-600-1-600-4um-diff_LF-5x5-1','data/AR-SA-200-1-200-4um-diff_LF-4x4-1','data/AR-SA-600-1-600-4um-diff_LF-4x4-1', 'data/AR-SA-600-1-600-3,5um-diff_LF-4x4-2', 'data/AR-SA-300-1-300-2um-diff_LF-4x4-3']
 path = ['data/AR-SA-450-1-450-3um-diff_LF-4x4-1', 'data/AR-SA-450-1-450-3um-diff_LF-5x5-1', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2' ,'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']   #Messungen mit neuen MEMS
-#Piezo_, MEMS_, time_, Cap_ = imp_data(path)
-#Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
-# Piezo_1, MEMS_1, time_1, Cap_1 = imp_data(path1)
-# Piezo1, MEMS1, time1, Cap1, POC1, X_val1, Y_val1 = split_array(Piezo_1, MEMS_1, time_1, Cap_1)
-# Piezo.extend(Piezo1)
-# MEMS.extend(MEMS1)
-# time.extend(time1)
-# Cap.extend(Cap1)
 
+P_offg, P_ing = [], []
 for a, j in enumerate(path):
     Piezo_, MEMS_, time_, Cap_ = imp_data(j)
     Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
@@ -201,6 +194,9 @@ for a, j in enumerate(path):
         hmax.append(np.max(P))
         P_in.append(Force[poc])
         P_off.append(Force[index_ul])
+        P_ing.append(Force[poc])
+        P_offg.append(Force[index_ul])
+        
 
         #S = calc_stiff(popt_exp, reversed_Piezo[-1])    #[nN/nm]
         # h_c = calc_hc(reversed_Depth[-1], reversed_Force[-1], S, eps=0.774) #[nm]
@@ -236,9 +232,20 @@ for a, j in enumerate(path):
     plt.legend()
     
 
+P_offg =np.array(P_offg)
+P_offg = P_offg[P_offg<-2000]
+P_ing =np.array(P_ing)
+#P_ing = P_ing[P_ing<-2000]
 
+fig, (ax1, ax2) = plt.subplots(1,2)
+ax1.hist(P_offg, 25,histtype='stepfilled', color='r', stacked=None)
+ax1.set_ylabel('Anzahl')
+ax1.set_xlabel('Pull-off Kraft [nN]',fontsize=14)
 
+ax2.hist(P_ing, 25, histtype='bar', color='g', stacked=None)
+ax2.set_xlabel('Snap-in Kraft [nN]',fontsize=14)
 
+fig.suptitle('Spitze-Probe Interaktionen', fontsize=16)
 
 
 

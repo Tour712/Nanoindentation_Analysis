@@ -195,7 +195,7 @@ def func_hertz(Depth, E):
 def fitting(reversed_piezo, reversed_MEMS, fit_range, *p0, fit_func=func_lin):
     start_index = int(len(reversed_piezo)*fit_range[0])
     end_index = int(len(reversed_piezo)*fit_range[1])
-    return curve_fit(fit_func, reversed_piezo[start_index:end_index], reversed_MEMS[start_index:end_index], *p0, maxfev=400000)
+    return curve_fit(fit_func, reversed_piezo[start_index:end_index], reversed_MEMS[start_index:end_index], *p0, maxfev=100000,method='trf')
 
 def detect_poc(F, h, delta=3):
     for index, value in enumerate(F):

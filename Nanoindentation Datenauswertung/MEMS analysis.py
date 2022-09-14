@@ -23,6 +23,9 @@ plt.ylabel('Verschiebung von Piezo/MEMS [nm]')
 plt.title('MEMS Stufentest')
 plt.legend()
 
+plt.figure()
+plt.hist(MEMS_np_raw, 50)
+
 #%%
 #evaluate drift data
 path = 'data/Drift-2, pressure off, chuck not activated'
