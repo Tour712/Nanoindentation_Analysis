@@ -300,7 +300,7 @@ for a, j in enumerate(path):
         P_ing.append(Force[poc])
         P_offg.append(Force[index_ul])
         
-        popt_exp, pcov_exp = fitting(reversed_Depth, reversed_Force, (0.7,0.95), fit_func=func_exp)
+        popt_exp, pcov_exp = fitting(reversed_Depth, reversed_Force, (0.85,0.95), fit_func=func_exp)
         S = calc_stiff(popt_exp, reversed_Depth[-1])    #[nN/nm]
         h_c = calc_hc(reversed_Depth[-1], reversed_Force[-1], S, eps=0.774) #[nm]
         E_Op, E_reduced_Op = calc_emod(S, area_sphere(h_c))
