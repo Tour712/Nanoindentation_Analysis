@@ -14,7 +14,7 @@ fit_range = [0.7, 0.95]
 
 path = ['data/PDMS/EM-PDMS-120-10-120-0,8um-1','data/PDMS/EM-PDMS-120-10-120-1,2um-1' ]
 
-path = ['data/PDMS/12.09/EM-PDMS-110-10-110, 20nms,2,2um-2', 'data/PDMS/12.09/EM-PDMS-125-10-125, 20nms,2,5um-3', 'data/PDMS/12.09/EM-PDMS-150-10-150, 20nms,3um-4']#,'data/PDMS/13.09/EM-PDMS-150-10-150-20nms-3um-5']
+path = ['data/PDMS/12.09/EM-PDMS-110-10-110, 20nms,2,2um-2', 'data/PDMS/12.09/EM-PDMS-125-10-125, 20nms,2,5um-3', 'data/PDMS/12.09/EM-PDMS-150-10-150, 20nms,3um-4','data/PDMS_10-1/test-4', 'data/PDMS_10-1/test-5','data/PDMS_10-1/test-6'] #,'data/PDMS/13.09/EM-PDMS-150-10-150-20nms-3um-5']
 
     
 for i in path:
@@ -49,6 +49,11 @@ path = 'data/PDMS/12.09/EM-PDMS-110-10-110, 20nms,2,2um-2'
 #path = 'data/PDMS/12.09/EM-PDMS-125-10-125, 20nms,2,5um-3'
 #path = 'data/PDMS/13.09/EM-PDMS-150-10-150-20nms-3um-5'
 #path = 'data/PDMS/12.09/EM-PDMS-150-10-150, 20nms,3um-4'
+
+#Messung an PDMS 10-1 Probe
+path = 'data/PDMS_10-1/test-4'
+path = 'data/PDMS_10-1/test-5'
+path = 'data/PDMS_10-1/test-5'
 Piezo, MEMS, time, Cap = imp_data(path)
 Piezo_np, MEMS_np, time_np, Cap_np = data_conversion(Piezo, MEMS, time, Cap)
 Piezo_np = (Piezo_np - Piezo_np[0])*1000
@@ -73,11 +78,11 @@ reversed_Depth = unload_Depth[::-1] #[nm]
 reversed_Force = unload_Force[::-1] #[nN]
 
 # #calculations
-popt_exp, pcov_exp = fitting(reversed_Depth, reversed_Force, fit_range, fit_func=func_exp)
-S = calc_stiff(popt_exp, reversed_Depth[-1])    #[nN/nm]
-h_c = calc_hc(reversed_Depth[-1], reversed_Force[-1], S, eps=0.774) #[nm]
-E_Op, E_reduced_Op = calc_emod(S, area_sphere(h_c))
-idx_F0 = find_nearest(Force[poc_i:np.argmax(Force)])
+#popt_exp, pcov_exp = fitting(reversed_Depth, reversed_Force, fit_range, fit_func=func_exp)
+#S = calc_stiff(popt_exp, reversed_Depth[-1])    #[nN/nm]
+#h_c = calc_hc(reversed_Depth[-1], reversed_Force[-1], S, eps=0.774) #[nm]
+#E_Op, E_reduced_Op = calc_emod(S, area_sphere(h_c))
+#idx_F0 = find_nearest(Force[poc_i:np.argmax(Force)])
 #E_hz_reduced, E_hz  = calc_hertz(Force[poc_i:index_l], Depth[poc_i:index_l])
 
 
@@ -93,7 +98,7 @@ plt.title(path)
 plt.subplot(2,1,2)
 plt.plot(Depth, Force)
 plt.plot(np.take(Depth, index), np.take(Force, index), ls = '', marker = "o", label = 'segment boundarys')
-plt.plot(reversed_Depth, func_exp(reversed_Depth, popt_exp[0], popt_exp[1], popt_exp[2]), label='power-law Fit')
+#plt.plot(reversed_Depth, func_exp(reversed_Depth, popt_exp[0], popt_exp[1], popt_exp[2]), label='power-law Fit')
 #plt.plot(Depth[poc_i:index_l], func_hertz(Depth[poc_i:index_l], E_hz_reduced), label='Hertz-Fit')
 plt.xlabel('Depth [nm]')
 plt.ylabel('Kraft [nN]')

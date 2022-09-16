@@ -158,7 +158,7 @@ for a, j in enumerate(path):
         # store each measurement as np array in a list
         Piezo[i], MEMS[i], time[i] = P, M, t
                 
-        Force = M * 3
+        Force = M * K
         Depth = (P - M)
         Depth = Depth - Depth[np.argmin(Force[0:np.argmax(Force)])]
         # plt.subplot(2,1,2)
@@ -243,6 +243,106 @@ ax1.set_ylabel('Anzahl')
 ax1.set_xlabel('Pull-off Kraft [nN]',fontsize=14)
 
 ax2.hist(P_ing, 25, histtype='bar', color='g', stacked=None)
+ax2.set_xlabel('Snap-in Kraft [nN]',fontsize=14)
+
+fig.suptitle('Spitze-Probe Interaktionen', fontsize=16)
+
+#%%
+#this script is for analysis of array Measurement on PDMS
+
+path = ['data/PDMS/15.09/AR-PDMS-100ms,4um,20nms,1,5um offset,27x1-1']
+
+P_offg, P_ing = [], []
+for a, j in enumerate(path):
+    Piezo_, MEMS_, time_, Cap_ = imp_data(j)
+    Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
+    S_load, S_uload = [], []
+    hmax = []
+    P_in, P_off = [], []
+    E_r_jkr, E_jkr = [], []
+    n = 0
+    x = 1
+    for i in range(len(Piezo)-s):
+               
+        P, M, t, C = data_conversion(Piezo[i*x+n], MEMS[i*x+n], time[i*x+n], Cap[i*x+n])
+        P_, M_, t_, C_, poc = poc_detect(P, M, t, C)  
+        P = (P )*1000
+    
+        # store each measurement as np array in a list
+        Piezo[i], MEMS[i], time[i] = P, M, t
+                
+        Force = M * K
+        Depth = (P - M)
+        Depth = Depth - Depth[np.argmin(Force[0:np.argmax(Force)])]
+        
+        plt.subplot(3,1,1)
+        plt.plot(P, M, label = str(i))
+        plt.grid(b=True)
+        plt.xlabel('Piezo[nm]')
+        plt.ylabel('MEMS [nm]') 
+        plt.legend()
+         
+        index_l, index_h, index_ul = data_splitting(P, M, t)
+        
+        unload_Depth = Depth[index_h : index_ul+1]
+        unload_Force = Force[index_h : index_ul+1] 
+    
+        reversed_Depth = unload_Depth[::-1] #[nm]
+        reversed_Force = unload_Force[::-1] #[nN]
+        
+        #plot segment boundaries
+        index = [index_l, index_h, index_ul]
+        #calculations
+
+        hmax.append(np.max(Depth))
+        P_in.append(Force[poc])
+        P_off.append(Force[index_ul])
+        P_ing.append(Force[poc])
+        P_offg.append(Force[index_ul])
+        
+        popt_exp, pcov_exp = fitting(reversed_Depth, reversed_Force, (0.7,0.95), fit_func=func_exp)
+        S = calc_stiff(popt_exp, reversed_Depth[-1])    #[nN/nm]
+        h_c = calc_hc(reversed_Depth[-1], reversed_Force[-1], S, eps=0.774) #[nm]
+        E_Op, E_reduced_Op = calc_emod(S, area_sphere(h_c))
+        print(S,E_Op)
+    
+        E_r_jkr.append(10**-6*calc_JKRp(Depth, Force, R= 7500)[0])        
+        E_jkr.append(10**-6*calc_JKRp(Depth, Force, R= 7500)[1])   
+        
+        plt.subplot(3,1,2)
+        plt.plot(Depth, Force)
+        plt.plot(np.take(Depth, index), np.take(Force, index), ls = '', marker = "o")
+        plt.grid(b=True)
+    
+    
+
+    i_num = 9
+    i_rep = 3
+    E_mean, E_std, h = [], [], []
+    for c in range(i_num):
+        E_mean.append(np.mean(E_jkr[c::9]))
+        E_std.append(np.std(E_jkr[c::9]))
+        h.append(np.mean(hmax[c::9]))
+        
+        
+    plt.figure()
+    plt.errorbar(h, E_mean, yerr = E_std, c = 'k')
+    plt.scatter(hmax, E_jkr, c= 'r')
+    plt.grid(b=True)
+    plt.xlabel('Eindringtiefe [nm]',fontsize=14)
+    plt.ylabel('E-Modul [MPa]', fontsize=14) 
+    plt.title(path)
+    
+
+P_offg =np.array(P_offg)
+P_ing =np.array(P_ing)
+
+fig, (ax1, ax2) = plt.subplots(1,2)
+ax1.hist(P_offg, 10,histtype='stepfilled', color='r', stacked=None)
+ax1.set_ylabel('Anzahl')
+ax1.set_xlabel('Pull-off Kraft [nN]',fontsize=14)
+
+ax2.hist(P_ing, 10, histtype='bar', color='g', stacked=None)
 ax2.set_xlabel('Snap-in Kraft [nN]',fontsize=14)
 
 fig.suptitle('Spitze-Probe Interaktionen', fontsize=16)
