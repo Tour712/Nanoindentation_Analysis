@@ -6,6 +6,7 @@ Created on Thu Sep  8 10:24:23 2022
 """
 
 from functions import *
+#%%
 ###########################################################################
 #this script is for analysis of partial-unload measurement on Saphire
 
@@ -279,8 +280,8 @@ path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,5x1-4'
 path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,9x1-5'
 path = 'data/PDMS/14.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,25%,9x1-6'
 path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,20nms,9cycles,1,5um offset,75%,5x1-7'
-path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,7nms,9cycles,1,5um offset,75%,5x1-8'
-path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,20nms,16cycles,1,5um offset,75%,16x1-9'
+#path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,7nms,9cycles,1,5um offset,75%,5x1-8'
+#path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,20nms,16cycles,1,5um offset,75%,16x1-9'
 
 #path = 'data/PDMS/15.09/AR-PDMS-100ms,4um,20nms,1,5um offset,27x1-1'
 
@@ -288,7 +289,7 @@ Piezo_, MEMS_, time_, Cap_ = imp_data(path)
 Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
 S_load = []
 S_uload = []
-hmax = []
+h_ges = []
 P_in = []
 P_off = []
 S_l, S_e, S_linear = [],[],[]
@@ -344,19 +345,18 @@ for j in range(len(Piezo)-s):
     E_r_JKR.append(calc_JKRp(Depth, Force, R= 7500)[0])
     E_JKR.append(calc_JKRp(Depth, Force, R= 7500)[1])
     unload_Depth, unload_Force = [],[]
-    hmax = []
+    #h_max = []
     popt_exp, pcov_exp = [],[]
     popt_lin, pcov_lin = [],[]
     popt_log, pcov_log = [],[]
     S_log, S_exp = [], []
-    hmax = []
     n=0
     for i in range(len(index_l)-n):
         up = Depth[index_h[i+n] : index_ul[i+n]]
         uM = Force[index_h[i+n] : index_ul[i+n]]
         unload_Depth.append(up[::-1])
         unload_Force.append(uM[::-1]) 
-        hmax.append(np.max(up))
+        #h_max.append(np.max(up))
         #plt.plot(up, uM)
         f_n +=1
     
@@ -397,33 +397,35 @@ for j in range(len(Piezo)-s):
         popt_lin.append(par_l[0])
         S_log.append(calc_stiff(par_log, up[0]))
         S_exp.append(calc_stiff(par_exp, up[0]))
+        h_ges.append(np.max(up))
 
     
     S_l.append(S_log)
     S_e.append(S_exp)
     S_linear.append(popt_lin)
 print('number of failed fits:', f_err)
-S_mean = [[],[],[]]
-S_std = [[],[],[]]
+S_m, S_s = [[],[],[]], [[],[],[]]
+h_mean = []
 cycles = np.arange(0,len(S_e[0]),1)
 S_e = np.array(S_e)
 S_l = np.array(S_l)
 S_linear = np.array(S_linear)
 for i in range(len(S_e[0])):
-    S_mean[0].append(np.mean(S_e[:,i]))
-    S_std[0].append(np.std(S_e[:,i]))
+    S_m[0].append(np.mean(S_e[:,i]))
+    S_s[0].append(np.std(S_e[:,i]))
     
-    S_mean[1].append(np.mean(S_l[:,i]))
-    S_std[1].append(np.std(S_l[:,i]))
+    S_m[1].append(np.mean(S_l[:,i]))
+    S_s[1].append(np.std(S_l[:,i]))
     
-    S_mean[2].append(np.mean(S_linear[:,i]))
-    S_std[2].append(np.std(S_linear[:,i]))
+    S_m[2].append(np.mean(S_linear[:,i]))
+    S_s[2].append(np.std(S_linear[:,i]))
+    h_mean.append(np.mean(h_ges[i::9])) 
 
 #plot stiffness versus indentation depth with errorbars 
 plt.figure()       
-plt.errorbar(cycles, S_mean[0], yerr = S_std[0], label='from power fit')
-plt.errorbar(cycles, S_mean[1], yerr = S_std[1], label='from log fit')
-plt.errorbar(cycles, S_mean[2], yerr = S_std[2], label='from linear fit')
+plt.errorbar(h_mean, S_m[0], yerr = S_s[0], label='from power fit')
+plt.errorbar(h_mean, S_m[1], yerr = S_s[1], label='from log fit')
+plt.errorbar(h_mean, S_m[2], yerr = S_s[2], label='from linear fit')
 plt.xlabel('MEMS-Verschiebung [nm]')
 plt.ylabel('Steifigkeit')
 plt.title('S als Mittelwert mit 1 $\sigma$ Standarabweichung ')

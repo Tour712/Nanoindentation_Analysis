@@ -112,7 +112,6 @@ plt.ylabel('Steifigkeit')
 
 
 #%%
-#from pre_processing_plain import *
 path = 'data/PDMS/AR-PDMS-60-10-60-1,2um-3x3-1'   
 path = 'data/PDMS/AR-PDMS-60-10-60-1,2um-4x4-1'
 
@@ -245,7 +244,7 @@ ax1.set_xlabel('Pull-off Kraft [nN]',fontsize=14)
 ax2.hist(P_ing, 25, histtype='bar', color='g', stacked=None)
 ax2.set_xlabel('Snap-in Kraft [nN]',fontsize=14)
 
-fig.suptitle('Spitze-Probe Interaktionen', fontsize=16)
+fig.suptitle('Spitze-Probe Interaktionen (Saphir-Probe)', fontsize=16)
 
 #%%
 #this script is for analysis of array Measurement on PDMS
@@ -260,8 +259,11 @@ for a, j in enumerate(path):
     hmax = []
     P_in, P_off = [], []
     E_r_jkr, E_jkr = [], []
+    E_Op = [[],[]]
+    S_ges = []
     n = 0
     x = 1
+    s = 0
     for i in range(len(Piezo)-s):
                
         P, M, t, C = data_conversion(Piezo[i*x+n], MEMS[i*x+n], time[i*x+n], Cap[i*x+n])
@@ -300,12 +302,23 @@ for a, j in enumerate(path):
         P_ing.append(Force[poc])
         P_offg.append(Force[index_ul])
         
-        popt_exp, pcov_exp = fitting(reversed_Depth, reversed_Force, (0.85,0.95), fit_func=func_exp)
+        
+        frange = [0.85, 0.95]
+        # start_index = int(len(reversed_Force)*frange[0])
+        # idx_0 = find_nearest(reversed_Force,value=3)
+        #reversed_Force= reversed_Force-Force[index_ul]
+        
+        # if reversed_Force[start_index]<0:
+        #     frange[0] = idx_0/len(reversed_Force)
+        #     print(frange) 
+            
+        popt_exp, pcov_exp = fitting(reversed_Depth, reversed_Force, frange, fit_func=func_exp)
         S = calc_stiff(popt_exp, reversed_Depth[-1])    #[nN/nm]
         h_c = calc_hc(reversed_Depth[-1], reversed_Force[-1], S, eps=0.774) #[nm]
-        E_Op, E_reduced_Op = calc_emod(S, area_sphere(h_c))
-        print(S,E_Op)
-    
+        E_Op[0].append(10**-6*calc_emod(S, area_sphere(h_c))[0])
+        E_Op[1].append(10**-6*calc_emod(S, area_sphere(h_c))[1])
+        
+        S_ges.append(S)
         E_r_jkr.append(10**-6*calc_JKRp(Depth, Force, R= 7500)[0])        
         E_jkr.append(10**-6*calc_JKRp(Depth, Force, R= 7500)[1])   
         
@@ -318,21 +331,37 @@ for a, j in enumerate(path):
 
     i_num = 9
     i_rep = 3
-    E_mean, E_std, h = [], [], []
+    E_mean, E_std, h, S_mean, S_std = [], [], [],[], []
+    E_Op_mean, E_Op_std = [], []
     for c in range(i_num):
         E_mean.append(np.mean(E_jkr[c::9]))
         E_std.append(np.std(E_jkr[c::9]))
         h.append(np.mean(hmax[c::9]))
+        S_mean.append(np.mean(S_ges[c::9]))
+        S_std.append(np.std(S_ges[c::9]))
+        E_Op_mean.append(np.mean(E_Op[1][c::9]))
+        E_Op_std.append(np.std(E_Op[1][c::9]))
         
-        
-    plt.figure()
-    plt.errorbar(h, E_mean, yerr = E_std, c = 'k')
-    plt.scatter(hmax, E_jkr, c= 'r')
+    fig, (ax1,ax2) = plt.subplots(2,1)
+    ax1.errorbar(h, E_mean, yerr = E_std, c = 'k')
+    ax1.scatter(hmax, E_jkr, c= 'r')
     plt.grid(b=True)
-    plt.xlabel('Eindringtiefe [nm]',fontsize=14)
-    plt.ylabel('E-Modul [MPa]', fontsize=14) 
+    ax1.set_xlabel('Eindringtiefe [nm]',fontsize=14)
+    ax1.set_ylabel('E-Modul [MPa]', fontsize=14) 
+    
+    ax2.scatter(hmax, S_ges, c= 'r')
+    ax2.errorbar(h, S_mean, yerr = S_std, c='r', label='Steifigkeit')
+    ax2.set_ylabel('Steifigkeit [nN/nm]')
+    ax2.legend()
+    ax3 = ax2.twinx()
+    ax3.scatter(hmax, E_Op[1])
+    ax3.errorbar(h, E_Op_mean, yerr = E_Op_std, c = 'g', label ='E-OP')
+    ax3.set_ylabel('E_Op[MPa]')
+    ax3.legend()
     plt.title(path)
     
+
+
 
 P_offg =np.array(P_offg)
 P_ing =np.array(P_ing)
