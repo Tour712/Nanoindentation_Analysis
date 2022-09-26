@@ -95,7 +95,6 @@ for p in path:
 #%%
 #analysis of MEMS ramp response
 path = 'data/MEMS Resolution Test/resolution in contact-6'
-
 time, Piezo, MEMS = imp_data(path)
 time_np, Piezo_np, MEMS_np = data_conversion(time, Piezo, MEMS)
 MEMS_std = np.std(MEMS_np)
@@ -106,10 +105,13 @@ Piezo_mean = np.mean(Piezo_np)
 plt.subplot(1,2,1)
 plt.plot(time_np, MEMS_np,'r', marker='+',linestyle='-',linewidth =0.5, label='MEMS')
 plt.plot(time_np, Piezo_np, 'k',marker='.',linestyle='-',linewidth =0.5, label='Piezo')
+plt.ylim(-0.7,0.7)
+#plt.text(0, 0.6, fontsize=14)
 plt.xlabel('Zeit [s]')
 plt.ylabel('MEMS/Piezo Verschiebung [nm]')
 plt.yscale('linear')
-plt.title('file:'+path+'\n'+'MEMS std='+str(MEMS_std)+'    MEMS mean='+str(MEMS_mean)+'\n'+'Piezo std='+str(Piezo_std)+'   Piezo mean='+str(Piezo_mean))
+#plt.title('file:'+path+'\n'+'MEMS std='+str(MEMS_std)+'    MEMS mean='+str(MEMS_mean)+'\n'+'Piezo std='+str(Piezo_std)+'   Piezo mean='+str(Piezo_mean))
+plt.title('in Kontakt')
 plt.legend()
 
 
@@ -123,13 +125,15 @@ Piezo_std = np.std(Piezo_np)
 Piezo_mean = np.mean(Piezo_np)
 
 plt.subplot(1,2,2)
-plt.plot(time_np, MEMS_np,'r', marker='.',linestyle='-',linewidth =0.5, label='MEMS')
-plt.plot(time_np, Piezo_np, 'k',marker='+',linestyle='-',linewidth =0.5, label='Piezo')
+plt.plot(time_np, MEMS_np,'r', marker='+',linestyle='-',linewidth =0.5, label='MEMS')
+plt.plot(time_np, Piezo_np, 'k',marker='.',linestyle='-',linewidth =0.5, label='Piezo')
+plt.ylim(-0.7,0.7)
 plt.xlabel('Zeit [s]')
-plt.ylabel('MEMS/Piezo Verschiebung [nm]')
+#plt.ylabel('MEMS/Piezo Verschiebung [nm]')
 plt.yscale('linear')
-plt.title('file:'+path+'\n'+'MEMS std='+str(MEMS_std)+'    MEMS mean='+str(MEMS_mean)+'\n'+'Piezo std='+str(Piezo_std)+'   Piezo mean='+str(Piezo_mean))
-plt.legend()
+#plt.title('file:'+path+'\n'+'MEMS std='+str(MEMS_std)+'    MEMS mean='+str(MEMS_mean)+'\n'+'Piezo std='+str(Piezo_std)+'   Piezo mean='+str(Piezo_mean))
+plt.title('in Luft')
+#plt.legend()
 
 
 

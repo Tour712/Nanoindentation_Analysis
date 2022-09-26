@@ -13,14 +13,19 @@ from functions import *
     
 #%%
 # einfache Messung
+plt.rc('xtick', labelsize=14) 
+plt.rc('ytick', labelsize=14) 
 
 path = 'data/S_calib/S_calib_0809-1'
+#path = 'data/S_calib/S_calib_0509-1'
+#path = 'data/S_calib/S_calib_0509-2'
+path = 'data/S_calib/S_calib_0509-3'
 
 Piezo, MEMS, time, Cap = imp_data(path)
 Piezo_np_raw, MEMS_np_raw, time_np_raw, Cap_np_raw = data_conversion(Piezo, MEMS, time, Cap)
 
 Piezo_np_raw = (Piezo_np_raw - Piezo_np_raw[0])*1000
-Cap_np_raw = (Cap_np_raw - Cap_np_raw[0])*10**6
+Cap_np_raw = (Cap_np_raw )*10**6
 
 index_l, index_h,index_ul = data_splitting(Piezo_np_raw, MEMS_np_raw, time_np_raw) 
 S = calc_S(Cap_np_raw, Piezo_np_raw, index_l)
@@ -31,23 +36,32 @@ popt_lin,cov = curve_fit(func_lin, Piezo_np_raw[0:index_l-1], Cap_np_raw[0:index
 #linear fit for unload segment
 popt_lin2,cov2 = curve_fit(func_lin, Piezo_np_raw[index_h:][::-1], Cap_np_raw[index_h:][::-1], maxfev=10000)
 
-#plt.plot(Piezo_np_raw, MEMS_np_raw)
-#plt.plot([Piezo_np_raw[index_h]], [MEMS_np_raw[index_h]], marker = "o" )
-plt.subplot(2,1,1)
-plt.plot(Piezo_np_raw, Cap_np_raw, label ='Messdaten')
-plt.plot(Piezo_np_raw, func_lin(Piezo_np_raw, popt_lin[0], popt_lin[1]), label ='Fit-Daten')
-plt.xlabel('Piezoposition [nm]')
-plt.ylabel('Kapazität [af]')
-plt.grid()
-plt.legend()
 
-plt.subplot(2,1,2)
+fig,ax1 = plt.subplots()
+ax3 = ax1.twinx()
+
+ax1.plot(Piezo_np_raw, Cap_np_raw*10**-6,'k', label ='Messdaten')
+#ax1.plot(Piezo_np_raw, func_lin(Piezo_np_raw, popt_lin[0], popt_lin[1])*10**-6, label ='Fit-Daten')
+ax1.set_xlabel('Piezoposition [nm]',fontsize=14)
+ax1.set_ylabel('Kapazität [pF]', fontsize=14)
+ax1.grid()
+#ax1.legend()
+
+ax3.plot(Piezo_np_raw[0:index_l][::10], ((Cap_np_raw[0:index_l] - func_lin(Piezo_np_raw[0:index_l], popt_lin[0], popt_lin[1]))/S)[::10],'r', marker='x', label ='Residuen Ladesegment')
+ax3.plot(Piezo_np_raw[index_h:index_ul][::10], ((Cap_np_raw[index_h:index_ul] - func_lin(Piezo_np_raw[index_h:index_ul], popt_lin[0], popt_lin[1]))/S)[::10],'g', marker='*', label ='Residuen Entladesegment')
+#plot an empty array with same style as data, to show all labels in one legend
+ax3.plot([],[],'k', label ='Messdaten')
+
+ax3.set_ylabel('Residuen [nm]',fontsize=14)
+ax3.legend()
+
+
 #plt.plot(Piezo_np_raw, Cap_np_raw, label ='Messdaten')
-plt.plot(Piezo_np_raw[0:index_l-1], (Cap_np_raw[0:index_l-1] - func_lin(Piezo_np_raw[0:index_l-1], popt_lin[0], popt_lin[1]))/S)
-plt.grid()
-plt.xlabel('Piezoposition [nm]')
-plt.ylabel('Residuen [nm]')
-plt.legend()
+# ax2.plot(Piezo_np_raw[0:index_l-1], (Cap_np_raw[0:index_l-1] - func_lin(Piezo_np_raw[0:index_l-1], popt_lin[0], popt_lin[1]))/S)
+# ax2.grid()
+# ax2.set_xlabel('Piezoposition [nm]',fontsize=14)
+# ax2.set_ylabel('Residuen [nm]',fontsize=14)
+# ax2.legend()
 
 
 #%%

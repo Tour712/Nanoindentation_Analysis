@@ -106,7 +106,7 @@ for j in range(len(Piezo)):
        
     index, index_l, index_h, index_ul = [],[],[],[]
     
-    index = data_splitting(Piezo_np, MEMS_np, time_np)
+    index = data_splitting(P, M, t)
     index_l.append(data_splitting(P, M, t)[0])
     index_h.append(data_splitting(P, M, t)[1])
     index_ul.append(data_splitting(P, M, t)[2]) 
@@ -278,10 +278,11 @@ path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,5x1'
 #path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,5x1-3'
 path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,5x1-4'
 path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,9x1-5'
-path = 'data/PDMS/14.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,25%,9x1-6'
-path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,20nms,9cycles,1,5um offset,75%,5x1-7'
-#path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,7nms,9cycles,1,5um offset,75%,5x1-8'
-#path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,20nms,16cycles,1,5um offset,75%,16x1-9'
+#path = 'data/PDMS/14.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,25%,9x1-6'
+#path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,20nms,9cycles,1,5um offset,75%,5x1-7'
+path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,7nms,9cycles,1,5um offset,75%,5x1-8'
+path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,20nms,16cycles,1,5um offset,75%,16x1-9'
+path = 'data/PDMS_10-1/20.09/APM-PDMS10-1-100ms,4,5um,20nms,16cycles,2,5um offset,75%,5x1-1'
 
 #path = 'data/PDMS/15.09/AR-PDMS-100ms,4um,20nms,1,5um offset,27x1-1'
 
@@ -361,30 +362,30 @@ for j in range(len(Piezo)-s):
         f_n +=1
     
         if i==(len(index_l)-1):
-            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.85, 0.95])
+            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.8, 0.95])
             
-            try:
-                par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.85, 0.95], fit_func=func_log)
-            except RuntimeError:
-                print("Error - log_fit failed")
-                continue
+            # try:
+            #     par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.8, 0.95], fit_func=func_log)
+            # except RuntimeError:
+            #     print("Error - log_fit failed")
+            #     continue
                 
             try:
-                par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0.85, 0.95], fit_func=func_exp)
+                par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0.8, 0.95], fit_func=func_exp)
             except RuntimeError:
                 print("Error - power_fit failed")
                 f_err +=1
                 continue
         else:         
-            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.1, 0.95])
-            try:
-                par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.1, 0.95], fit_func=func_log)
-            except RuntimeError:
-                print("Error - log_fit failed")
-                continue
+            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.05, 0.95])
+            # try:
+            #     par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.05, 0.95], fit_func=func_log)
+            # except RuntimeError:
+            #     print("Error - log_fit failed")
+            #     continue
             
             try:
-                par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0.1, 0.95], fit_func=func_exp)
+                par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0.05, 0.95], fit_func=func_exp)
             except RuntimeError:
                 print("Error - power_fit failed")
                 f_err +=1
@@ -419,13 +420,14 @@ for i in range(len(S_e[0])):
     
     S_m[2].append(np.mean(S_linear[:,i]))
     S_s[2].append(np.std(S_linear[:,i]))
-    h_mean.append(np.mean(h_ges[i::9])) 
+    h_mean.append(np.mean(h_ges[i::len(index_l)])) 
 
 #plot stiffness versus indentation depth with errorbars 
 plt.figure()       
-plt.errorbar(h_mean, S_m[0], yerr = S_s[0], label='from power fit')
-plt.errorbar(h_mean, S_m[1], yerr = S_s[1], label='from log fit')
-plt.errorbar(h_mean, S_m[2], yerr = S_s[2], label='from linear fit')
+plt.errorbar(h_mean, S_m[0], yerr = S_s[0],capsize=3, label='from power fit')
+# plt.errorbar(h_mean, S_m[1], yerr = S_s[1], capsize=3, label='from log fit')
+plt.errorbar(h_mean, S_m[2], yerr = S_s[2], capsize=3, label='from linear fit')
+plt.grid(b=True)
 plt.xlabel('MEMS-Verschiebung [nm]')
 plt.ylabel('Steifigkeit')
 plt.title('S als Mittelwert mit 1 $\sigma$ Standarabweichung ')
