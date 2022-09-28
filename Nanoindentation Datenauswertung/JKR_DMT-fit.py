@@ -16,7 +16,7 @@ def DMT_fit(h, K, P_off):
     return R**(0.5) *h**(3/2) *K -P_off
     
     
-path = 'data/PDMS/EM-PDMS-120-10-120-1,2um-1'
+path = 'C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/test-5'
 
 Piezo_, MEMS_, time_, Cap_ = imp_data(path)
 P, M, t, C = data_conversion(Piezo_, MEMS_, time_, Cap_)
@@ -46,7 +46,7 @@ index = [index_l, index_h, index_ul]
 
 #popt_uload, pcov_uload = curve_fit(func_lin, reversed_Piezo, reversed_MEMS, (0.0,0.95))
 #popt_uload, pcov_uload = curve_fit(JKR_fit1, reversed_Force, reversed_Depth, (100, 2200,-600), maxfev=20000, bounds = ([0,0, -700],[100,3000,-300]))
-popt_DMT, pcov_DMT = curve_fit(DMT_fit, unload_Depth, unload_Force, (100,-600), maxfev=20000)
+#popt_DMT, pcov_DMT = curve_fit(DMT_fit, unload_Depth, unload_Force, (100,-600), maxfev=20000)
 
 plt.subplot(2,1,1)
 plt.plot(P, M, label = 'JKR')
@@ -54,7 +54,7 @@ plt.subplot(2,1,2)
 plt.plot(Depth, Force, label = 'JKR')
 plt.plot(reversed_Depth, reversed_Force)
 #plt.plot(JKR_fit1(reversed_Force, popt_uload[0], popt_uload[1], popt_uload[2]), reversed_Force,  label = 'JKR')
-plt.plot(reversed_Depth, DMT_fit(reversed_Depth, popt_DMT[0], popt_DMT[1]),  label = 'DMT')
+#plt.plot(reversed_Depth, DMT_fit(reversed_Depth, popt_DMT[0], popt_DMT[1]),  label = 'DMT')
 plt.legend()
 
 #%%

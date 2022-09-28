@@ -120,15 +120,19 @@ path = ['data/AR-SA-600-1-600-4um-diff_LF-4x4-1']
 path = ['data/AR-SA-600-1-600-3,5um-diff_LF-4x4-2']
 path = ['data/AR-SA-335-1-335-2,5um-same_LF-5x5-2']
 path = ['data/AR-SA-300-1-300-2um-diff_LF-4x4-3']
-path = ['data/AR-SA-450-1-450-3um-diff_LF-4x4-1']
-path = ['data/AR-SA-450-1-450-3um-diff_LF-5x5-1']
-#path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2']
-#path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2']
-#path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']
+#ab hier Messungen mit neuem MEMS
+path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-1']
+path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-1']
+path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2']
+path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2']
+path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']
 #path =['O:/5-1/5-11/Messungen/2022/06_Nico_MA/05_Datenauswertung/Python/Nanoindentation Datenauswertung/data/PDMS/AR-SA-600-1-600-4um-diff_LF-5x5-1','data/AR-SA-200-1-200-4um-diff_LF-4x4-1','data/AR-SA-600-1-600-4um-diff_LF-4x4-1', 'data/AR-SA-600-1-600-3,5um-diff_LF-4x4-2', 'data/AR-SA-300-1-300-2um-diff_LF-4x4-3']
-#path = ['data/AR-SA-450-1-450-3um-diff_LF-4x4-1', 'data/AR-SA-450-1-450-3um-diff_LF-5x5-1', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2' ,'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']   #Messungen mit neuen MEMS
-
+path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-1', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-1', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2' ,'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']   #Messungen mit neuen MEMS
+path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-1','data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']   #Messungen mit neuen MEMS
+bad_curves = 0
 P_offg, P_ing = [], []
+S_l, S_ul, h_m = [], [], []
+colours=['r','b','g']
 for a, j in enumerate(path):
     Piezo_, MEMS_, time_, Cap_ = imp_data(j)
     Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
@@ -139,10 +143,11 @@ for a, j in enumerate(path):
     P_off = []
     n = 0
     x = 1
-    if a==3:
-        s=3
-    else:
-        s=0
+    s=0
+    # if a==3:
+    #     s=3
+    # else:
+    #     s=0
     for i in range(len(Piezo)-s):
                
         P, M, t, C = data_conversion(Piezo[i*x+n], MEMS[i*x+n], time[i*x+n], Cap[i*x+n])
@@ -184,6 +189,15 @@ for a, j in enumerate(path):
         #popt_exp, pcov_exp = fitting(reversed_Piezo, reversed_MEMS, fit_range, fit_func=func_exp)
         popt_load, pcov_load = curve_fit(func_lin, P[poc:index_l], M[poc:index_l], (0.0,0.95))
         popt_uload, pcov_uload = curve_fit(func_lin, reversed_Piezo, reversed_MEMS, (0.0,0.95))
+        
+        if Force[index_ul]>-2600:
+            bad_curves +=1
+            S_uload.append(np.nan)
+            S_load.append(np.nan)
+            hmax.append(np.nan)
+            P_in.append(np.nan)
+            P_off.append(np.nan)
+            continue
         P = P + popt_uload[1]
         S_uload.append(popt_uload[0])
         S_load.append(popt_load[0])
@@ -194,43 +208,78 @@ for a, j in enumerate(path):
         P_offg.append(Force[index_ul])
         
 
-        #S = calc_stiff(popt_exp, reversed_Piezo[-1])    #[nN/nm]
-        # h_c = calc_hc(reversed_Depth[-1], reversed_Force[-1], S, eps=0.774) #[nm]
-        # E_Op, E_reduced_Op = calc_emod(S, area_sphere(h_c))
-        # print(E_Op)
+        # plt.subplot(3,1,1)
+        # plt.plot(P, M)
+        # plt.plot(np.take(P, index), np.take(M, index), ls = '', marker = "o")
+        # plt.xlabel('Piezo[nm]')
+        # plt.ylabel('MEMS[nm]')
+        # plt.grid(visible=True)
+        # plt.title(path)  
     
-        # E_r_jkr, E_jkr = calc_JKRp(Depth, Force, R= 7500)
-        # print (E_r_jkr, E_jkr)
-        
-
-        plt.subplot(3,1,1)
-        plt.plot(P, M)
-        plt.plot(np.take(P, index), np.take(M, index), ls = '', marker = "o")
-        plt.xlabel('Piezo[nm]')
-        plt.ylabel('MEMS[nm]')
-        plt.grid(b=True)
-        plt.title(path)  
-        
-    plt.subplot(3,1,2)
-    plt.plot(hmax, S_load, marker = '.',label='from load segment'+str(a))
-    plt.plot(hmax, S_uload, marker = '.', label='Messung'+ str(a))
-    plt.grid(b=True)
+    S_l.append(S_load)
+    S_ul.append(S_uload)
+    h_m.append(hmax)
+    
+    P_in=np.array(P_in)
+    P_off=np.array(P_off)
+    hmax=np.array(hmax)
+    S_load = np.array(S_load)
+    S_uload = np.array(S_uload)
+    hmax = hmax[~np.isnan(S_uload)]
+    S_uload = S_uload[~np.isnan(S_uload)]
+    S_load = S_load[~np.isnan(S_load)]
+    P_in = P_in[~np.isnan(P_in)]
+    P_off = P_off[~np.isnan(P_off)]
+    print('Messreihe'+str(a+1)+'/n'+'mean +- std:')
+    print(np.mean(S_uload),np.std(S_uload))
+    
+    plt.subplot(1,1,1)
+    #plt.plot(hmax, S_load, marker = '.',label='load segment'+str(a))
+    plt.plot(hmax, S_uload, colours[a], marker = '.', label='Messreihe'+ str(a+1), alpha=0.5)
+    plt.grid(visible=True)
     plt.xlabel('Z-max [nm]')
     plt.ylabel('relative Steigfigkeit') 
     plt.legend()
     
-    plt.subplot(3,1,3)
-    plt.plot(hmax, P_off, marker = '.', label ='Messung'+str(a))
-    #plt.plot(hmax, P_in, marker = '.', label ='snap-in')
-    plt.grid(b=True)
-    plt.xlabel('Z-max [nm]')
-    plt.ylabel('pull-off [nN]') 
-    plt.legend()
+    # plt.subplot(2,1,2)
+    # plt.plot(hmax, P_off, marker = '.', label ='Messung'+str(a))
+    # #plt.plot(hmax, P_in, marker = '.', label ='snap-in')
+    # plt.grid(visible=True)
+    # plt.xlabel('Z-max [nm]')
+    # plt.ylabel('pull-off [nN]') 
+    # plt.legend()
     
+S_ul=np.array(S_ul)
+h_m=np.array(h_m)
+h_mean =[]
+S_mean = []
+S_std = []
+for i in range(len(S_ul[0])):
+    l = S_ul[:,i]
+    k =h_m[:,i]
+    n,m=[],[]
+    for j in range(len(l)):
+        if np.isnan(l[j]):
+            continue
+        n.append(l[j])
+        m.append(k[j])
+    h_mean.append(np.mean(m))
+    S_mean.append(np.mean(n))
+    S_std.append(np.std(n))
 
-P_offg =np.array(P_offg)
-P_offg = P_offg[P_offg<-2000]
-P_ing =np.array(P_ing)
+#plot stiffness versus indentation depth with errorbars 
+plt.subplot(1,1,1)       
+plt.errorbar(h_mean, S_mean, yerr = S_std, color= 'k', capsize=3, marker='x', label='$ S_{mean} \pm \sigma $ ')
+plt.xlabel('MEMS-Verschiebung [nm]')
+plt.ylabel('Steifigkeit')
+plt.title('S als Mittelwert mit 1 $\sigma$ Standarabweichung ')
+plt.ylim(1.002,1.012)
+plt.xlim(0.0,2400)
+plt.legend(fontsize=9)
+
+# P_offg =np.array(P_offg)
+# P_offg = P_offg[P_offg<-2000]
+# P_ing =np.array(P_ing)
 #P_ing = P_ing[P_ing<-2000]
 
 fig, (ax1, ax2) = plt.subplots(1,2)

@@ -8,6 +8,7 @@ Created on Wed Aug 17 13:44:25 2022
 from functions import *
 import scipy.ndimage as ndi
 
+plt.rcParams.update({'font.size': 14})
 #Test step resolution
 path = 'data/MEMS Resolution Test/MEMS step test,0,5nm,10Hz-1'
 Piezo, MEMS, time, Cap = imp_data(path)
@@ -16,8 +17,8 @@ Piezo_np_raw, MEMS_np_raw, time_np_raw = data_conversion(Piezo, MEMS, time)
 Piezo_np_raw = (Piezo_np_raw - Piezo_np_raw[0])*1000
 
 
-plt.plot(time_np_raw, Piezo_np_raw,ls = '-', markersize = 4, label='Piezo')
-plt.plot(time_np_raw, MEMS_np_raw,ls = '-', markersize = 4, label='MEMS')
+plt.plot(time_np_raw, Piezo_np_raw, 'k', marker ='.', ls = '-', markersize = 4, label='Piezo')
+plt.plot(time_np_raw, MEMS_np_raw, 'r', marker='x', ls = '-',alpha=0.8, markersize = 4, label='MEMS')
 plt.xlabel('Zeit [s]')
 plt.ylabel('Verschiebung von Piezo/MEMS [nm]')
 plt.title('MEMS Stufentest')
@@ -35,7 +36,7 @@ N = 100
 T_rmean = ndi.uniform_filter1d(T_np_raw[0:1100], N, mode='constant', origin=-(N//2))[:-(N-1)]
 
 #calculate 5min drift
-m = 10  #drift Interval in min
+m = 50  #drift Interval in min
 drift_M = np.zeros(len(MEMS_np_raw))
 for i in range(len(MEMS_np_raw)-m*2):
     drift_M[i] = (MEMS_np_raw[i]-MEMS_np_raw[i+m*2])/m
@@ -93,7 +94,7 @@ for p in path:
 
 #plt.bar([1,5,10,20,50,50,100,100], relax)
 #%%
-#analysis of MEMS ramp response
+#analysis of MEMS resolution
 path = 'data/MEMS Resolution Test/resolution in contact-6'
 time, Piezo, MEMS = imp_data(path)
 time_np, Piezo_np, MEMS_np = data_conversion(time, Piezo, MEMS)
@@ -136,5 +137,66 @@ plt.title('in Luft')
 #plt.legend()
 
 
+#%%
+#nur für Erzeugung der Abbildung
+path = 'data/MEMS Resolution Test/resolution in contact-6'
+time, Piezo, MEMS = imp_data(path)
+time_np, Piezo_np, MEMS_np = data_conversion(time, Piezo, MEMS)
+MEMS_std = np.std(MEMS_np)
+MEMS_mean = np.mean(MEMS_np)
+Piezo_std = np.std(Piezo_np)
+Piezo_mean = np.mean(Piezo_np)
+
+plt.subplot(2,2,1)
+plt.plot(time_np, MEMS_np,'r', marker='x',linestyle='-',linewidth =0.5, label='MEMS')
+plt.plot(time_np, Piezo_np, 'k',marker='.',linestyle='-',linewidth =0.5, label='Piezo')
+plt.ylim(-0.7,0.7)
+#plt.text(0, 0.6, fontsize=14)
+plt.xlabel('Zeit [s]')
+plt.ylabel('Verschiebung [nm]')
+plt.yscale('linear')
+#plt.title('file:'+path+'\n'+'MEMS std='+str(MEMS_std)+'    MEMS mean='+str(MEMS_mean)+'\n'+'Piezo std='+str(Piezo_std)+'   Piezo mean='+str(Piezo_mean))
+plt.title('in Kontakt')
+#plt.legend()
 
 
+path = 'data/MEMS Resolution Test/resolution out of contact-2'
+
+time, Piezo, MEMS = imp_data(path)
+time_np, Piezo_np, MEMS_np = data_conversion(time, Piezo, MEMS)
+MEMS_std = np.std(MEMS_np)
+MEMS_mean = np.mean(MEMS_np)
+Piezo_std = np.std(Piezo_np)
+Piezo_mean = np.mean(Piezo_np)
+
+plt.subplot(2,2,2)
+plt.plot(time_np, MEMS_np,'r', marker='x',linestyle='-',linewidth =0.5, label='MEMS')
+plt.plot(time_np, Piezo_np, 'k',marker='.',linestyle='-',linewidth =0.5, label='Piezo')
+plt.ylim(-0.7,0.7)
+plt.xlabel('Zeit [s]')
+#plt.ylabel('MEMS/Piezo Verschiebung [nm]')
+plt.yscale('linear')
+#plt.title('file:'+path+'\n'+'MEMS std='+str(MEMS_std)+'    MEMS mean='+str(MEMS_mean)+'\n'+'Piezo std='+str(Piezo_std)+'   Piezo mean='+str(Piezo_mean))
+plt.title('in Luft')
+#plt.legend()
+
+
+
+plt.rcParams.update({'font.size': 14})
+#Test step resolution
+path = 'data/MEMS Resolution Test/MEMS step test,0,5nm,10Hz-1'
+Piezo, MEMS, time, Cap = imp_data(path)
+Piezo_np_raw, MEMS_np_raw, time_np_raw = data_conversion(Piezo, MEMS, time)
+
+Piezo_np_raw = (Piezo_np_raw - Piezo_np_raw[0])*1000
+
+plt.subplot(2,1,2)
+plt.plot(time_np_raw, Piezo_np_raw, 'k', marker ='.', ls = '-', markersize = 4, label='Piezo')
+plt.plot(time_np_raw, MEMS_np_raw, 'r', marker='x', ls = '-',alpha=0.8, markersize = 4, label='MEMS')
+plt.xlabel('Zeit [s]')
+plt.ylabel('Verschiebung [nm]')
+plt.title('MEMS Stufentest')
+#plt.legend()
+
+handles, labels = ax.get_legend_handles_labels()
+fig.legend(handles, labels, loc='upper center')
