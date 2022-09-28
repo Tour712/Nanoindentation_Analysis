@@ -125,11 +125,12 @@ path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-1']
 path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-1']
 path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2']
 path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2']
-path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']
+#path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']
 #path =['O:/5-1/5-11/Messungen/2022/06_Nico_MA/05_Datenauswertung/Python/Nanoindentation Datenauswertung/data/PDMS/AR-SA-600-1-600-4um-diff_LF-5x5-1','data/AR-SA-200-1-200-4um-diff_LF-4x4-1','data/AR-SA-600-1-600-4um-diff_LF-4x4-1', 'data/AR-SA-600-1-600-3,5um-diff_LF-4x4-2', 'data/AR-SA-300-1-300-2um-diff_LF-4x4-3']
-path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-1', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-1', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2' ,'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']   #Messungen mit neuen MEMS
+#path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-1', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-1', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2' ,'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']   #Messungen mit neuen MEMS
 path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-1','data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']   #Messungen mit neuen MEMS
 bad_curves = 0
+S_m = 419*10**-6
 P_offg, P_ing = [], []
 S_l, S_ul, h_m = [], [], []
 colours=['r','b','g']
@@ -148,14 +149,16 @@ for a, j in enumerate(path):
     #     s=3
     # else:
     #     s=0
-    for i in range(len(Piezo)-s):
+
+    for i in range(len(Piezo)):
                
         P, M, t, C = data_conversion(Piezo[i*x+n], MEMS[i*x+n], time[i*x+n], Cap[i*x+n])
+        M = C/S_m
         # Piezo offset position and conversion to [nm]
         # detect POC
         P_, M_, t_, C_, poc = poc_detect(P, M, t, C)  
         P = (P )*1000
-    
+        P_c =  P-P[poc]
         # store each measurement as np array in a list
         Piezo[i], MEMS[i], time[i] = P, M, t
                 
@@ -187,8 +190,10 @@ for a, j in enumerate(path):
         index = [index_l, index_h, index_ul]
         #calculations
         #popt_exp, pcov_exp = fitting(reversed_Piezo, reversed_MEMS, fit_range, fit_func=func_exp)
-        popt_load, pcov_load = curve_fit(func_lin, P[poc:index_l], M[poc:index_l], (0.0,0.95))
-        popt_uload, pcov_uload = curve_fit(func_lin, reversed_Piezo, reversed_MEMS, (0.0,0.95))
+        popt_load, pcov_load = curve_fit(func_lin, P[poc:index_l], M[poc:index_l])
+        #popt_uload, pcov_uload = curve_fit(func_lin, reversed_Piezo, reversed_MEMS)
+        
+        popt_uload, pcov_uload = fitting(unload_Piezo[0:], unload_MEMS[0:],[0,1])
         
         if Force[index_ul]>-2600:
             bad_curves +=1
@@ -198,17 +203,16 @@ for a, j in enumerate(path):
             P_in.append(np.nan)
             P_off.append(np.nan)
             continue
-        P = P + popt_uload[1]
+        P = P + popt_load[1]
         S_uload.append(popt_uload[0])
         S_load.append(popt_load[0])
-        hmax.append(np.max(P))
+        hmax.append(np.max(M))
         P_in.append(Force[poc])
         P_off.append(Force[index_ul])
         P_ing.append(Force[poc])
         P_offg.append(Force[index_ul])
         
-
-        # plt.subplot(3,1,1)
+        # plt.figure()
         # plt.plot(P, M)
         # plt.plot(np.take(P, index), np.take(M, index), ls = '', marker = "o")
         # plt.xlabel('Piezo[nm]')
@@ -271,10 +275,10 @@ for i in range(len(S_ul[0])):
 plt.subplot(1,1,1)       
 plt.errorbar(h_mean, S_mean, yerr = S_std, color= 'k', capsize=3, marker='x', label='$ S_{mean} \pm \sigma $ ')
 plt.xlabel('MEMS-Verschiebung [nm]')
-plt.ylabel('Steifigkeit')
+plt.ylabel('Steigung')
 plt.title('S als Mittelwert mit 1 $\sigma$ Standarabweichung ')
-plt.ylim(1.002,1.012)
-plt.xlim(0.0,2400)
+# plt.ylim(1.002,1.012)
+# plt.xlim(0.0,2400)
 plt.legend(fontsize=9)
 
 # P_offg =np.array(P_offg)

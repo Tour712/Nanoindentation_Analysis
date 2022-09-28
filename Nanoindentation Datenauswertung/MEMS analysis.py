@@ -30,9 +30,12 @@ plt.hist(MEMS_np_raw, 50)
 #%%
 #evaluate drift data
 path = 'data/Drift-2, pressure off, chuck not activated'
+path = 'data/Drift/Drift-3, vacuum chuck activated, on 3inchwafer'
 MEMS, time, T, Cap = imp_data(path)
 MEMS_np_raw, time_np_raw, T_np_raw = data_conversion(MEMS, time, T)
-N = 100
+s = 500 #start at s min 
+MEMS_np_raw, time_np_raw, T_np_raw = MEMS_np_raw[s*2:], time_np_raw[s*2:], T_np_raw[s*2:]
+N = 5
 T_rmean = ndi.uniform_filter1d(T_np_raw[0:1100], N, mode='constant', origin=-(N//2))[:-(N-1)]
 
 #calculate 5min drift

@@ -144,12 +144,12 @@ for j in range(len(Piezo)):
         unload_Piezo.append(up[::-1])
         unload_MEMS.append(uM[::-1]) 
         hmax.append(np.max(uM))
-        if i==len(index_l):
-            par, cov = fitting(unload_Piezo[i] , unload_MEMS[i], [0.1, 0.95])
+        if i==len(index_l)-1:
+            par, cov = fitting(unload_Piezo[i] , unload_MEMS[i], [0.0, 1])
             #uncomment for power law fit
             #par, cov = fitting(unload_Piezo[i] , np.log(unload_MEMS[i]), [0.4, 0.95], (1.0, 1.0, 95), fit_func=func_exp)
         else:         
-            par, cov = fitting(unload_Piezo[i] , unload_MEMS[i], [0.1, 0.95]) 
+            par, cov = fitting(unload_Piezo[i] , unload_MEMS[i], [0, 1]) 
             #par, cov = fitting(unload_Piezo[i] , unload_MEMS[i], [0.3, 0.95], (1.0 ,1,0)) 
             #uncomment for power law fit
             #par, cov = fitting(unload_Piezo[i] , unload_MEMS[i], [0.4, 0.95], (1.0, 1.0 , 95), fit_func=func_exp)
@@ -159,7 +159,7 @@ for j in range(len(Piezo)):
     plt.subplot(2,1,1)
     plt.plot(hmax, S, marker = '.', label='Messung'+str(j))
     plt.xlabel('maximale MEMS-Verschiebung [nm]')
-    plt.ylabel('relative Steifigkeit')
+    plt.ylabel('Steigung')
     plt.legend()
     
     S_uload.append(S)
@@ -173,10 +173,11 @@ for i in range(len(S_uload[0])):
 
 #plot stiffness versus indentation depth with errorbars 
 plt.subplot(2,1,2)       
-plt.errorbar(hmax, S_mean, yerr = S_std)
+plt.errorbar(hmax, S_mean, yerr = S_std, color= 'k', capsize=3)
 plt.xlabel('MEMS-Verschiebung [nm]')
-plt.ylabel('Steifigkeit')
-plt.title('S als Mittelwert mit 1 $\sigma$ Standarabweichung ')
+plt.ylabel('Steigung')
+plt.grid(visible=True)
+#plt.title('S als Mittelwert mit 1 $\sigma$ Standarabweichung ')
  
     
 
