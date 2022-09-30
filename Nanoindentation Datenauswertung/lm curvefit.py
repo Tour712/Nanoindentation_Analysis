@@ -8,18 +8,28 @@ from functions import *
 import numpy as np
 from lmfit import Parameters,minimize, fit_report
 
+# def JKR_fitting_lmfit(params,P,h):
+#     a_0 = params['a_0']
+#     h_contact = params['h_contact']
+#     P_adh = params['P_adh']
+#     R = params['R']
+#     h_fit = ((a_0**2)/R) * ((1+np.sqrt(1-P/P_adh)))**(4/3) -((2*a_0**2)/3*R) * ((1+np.sqrt(1-P/P_adh))/2)**(1/3) + h_contact
+#     return h_fit-h
+
 def JKR_fitting_lmfit(params,P,h):
-    a_0 = params['a_0']
+    a_R = params['a_0']
     h_contact = params['h_contact']
     P_adh = params['P_adh']
-    R = params['R']
-    h_fit = ((a_0**2)/R) * ((1+np.sqrt(1-P/P_adh)))**(4/3) -((2*a_0**2)/3*R) * ((1+np.sqrt(1-P/P_adh))/2)**(1/3) + h_contact
+    h_fit = (a_R) * ((1+np.sqrt(1-P/P_adh)))**(4/3) -((2/3)*a_R) * ((1+np.sqrt(1-P/P_adh))/2)**(1/3) + h_contact
     return h_fit-h
 
-def JKR_fit1(P, a_0, h_contact, P_adh, R=7500):
-    return ((a_0**2)/R) * ((1+np.sqrt(1-P/P_adh)))**(4/3) -((2*a_0**2)/3*R) * ((1+np.sqrt(1-P/P_adh))/2)**(1/3) + h_contact
+# def JKR_fit1(P, a_0, h_contact, P_adh, R=7500):
+#     return ((a_0**2)/R) * ((1+np.sqrt(1-P/P_adh)))**(4/3) -((2*a_0**2)/3*R) * ((1+np.sqrt(1-P/P_adh))/2)**(1/3) + h_contact
  
-     
+def JKR_fit1(P, a_R, h_contact, P_adh):
+    return (a_R) * ((1+np.sqrt(1-P/P_adh)))**(4/3) -((2/3)*a_R) * ((1+np.sqrt(1-P/P_adh))/2)**(1/3) + h_contact
+  
+    
 def DMT_fit(h, K, P_off):
     R = 7500
     return R**(0.5) *h**(3/2) *K -P_off
@@ -58,7 +68,7 @@ params = Parameters()
 params.add('a_0',value=100, min=0,vary=True)
 params.add('h_contact', value=-600, min =-700,max=-500, vary=True)
 params.add('P_adh', value=-2715, max=-2712, vary=True)
-params.add('R', value=1.0, min=0, vary=False)
+#params.add('R', value=1.0, min=0, vary=False)
 
 # Calling the minimize function. Args contains the x and y data.
 #fitted_params = minimize(linear_fitting_lmfit, params, args=(x,y,), method='least_squares')
@@ -67,7 +77,7 @@ fitted_params = minimize(JKR_fitting_lmfit, params, args=(reversed_Force[300:], 
 a_0 = fitted_params.params['a_0'].value
 h_c = fitted_params.params['h_contact'].value 
 P_adh = fitted_params.params['P_adh'].value
-R = fitted_params.params['R'].value 
+#R = fitted_params.params['R'].value 
 
 
 # Pretty printing all the statistical data
@@ -75,13 +85,13 @@ print(fit_report(fitted_params))
 
 plt.subplot(3,1,1)
 plt.plot(Depth, Force, label = 'JKR')
-plt.plot(JKR_fit1(reversed_Force,a_0,h_c, P_adh,R=R), reversed_Force,  label = 'JKR fit')
+plt.plot(JKR_fit1(reversed_Force,a_0,h_c, P_adh), reversed_Force,  label = 'JKR fit')
 
 
 
 plt.subplot(3,1,2)
 plt.plot(reversed_Force, reversed_Depth, label = 'h(F)')
-plt.plot(reversed_Force, JKR_fit1(reversed_Force,a_0,h_c, P_adh, R), label = 'h(F)')
+plt.plot(reversed_Force, JKR_fit1(reversed_Force,a_0,h_c, P_adh), label = 'h(F)')
 plt.legend()
 
 # a=np.linspace(0.0001,1,10)
