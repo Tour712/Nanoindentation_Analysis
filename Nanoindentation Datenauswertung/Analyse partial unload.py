@@ -395,9 +395,9 @@ for j in range(len(Piezo)-s):
         
         #plt.plot(up[::-1], func_exp(up[::-1], par_exp[0], par_exp[1], par_exp[2]),'r')
         popt_exp.append(par_exp)
-        popt_log.append(par_log)
+        #popt_log.append(par_log)
         popt_lin.append(par_l[0])
-        S_log.append(calc_stiff(par_log, up[0]))
+        #S_log.append(calc_stiff(par_log, up[0]))
         S_exp.append(calc_stiff(par_exp, up[0]))
         h_ges.append(np.max(up))
 
@@ -416,8 +416,8 @@ for i in range(len(S_e[0])):
     S_m[0].append(np.mean(S_e[:,i]))
     S_s[0].append(np.std(S_e[:,i]))
     
-    S_m[1].append(np.mean(S_l[:,i]))
-    S_s[1].append(np.std(S_l[:,i]))
+    # S_m[1].append(np.mean(S_l[:,i]))
+    # S_s[1].append(np.std(S_l[:,i]))
     
     S_m[2].append(np.mean(S_linear[:,i]))
     S_s[2].append(np.std(S_linear[:,i]))

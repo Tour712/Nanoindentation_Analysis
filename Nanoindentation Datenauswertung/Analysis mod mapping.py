@@ -153,7 +153,7 @@ for a, j in enumerate(path):
     for i in range(len(Piezo)):
                
         P, M, t, C = data_conversion(Piezo[i*x+n], MEMS[i*x+n], time[i*x+n], Cap[i*x+n])
-        M = C/S_m
+        #M = C/S_m
         # Piezo offset position and conversion to [nm]
         # detect POC
         P_, M_, t_, C_, poc = poc_detect(P, M, t, C)  
@@ -237,12 +237,12 @@ for a, j in enumerate(path):
     print('Messreihe'+str(a+1)+'/n'+'mean +- std:')
     print(np.mean(S_uload),np.std(S_uload))
     
-    plt.subplot(1,1,1)
+    plt.subplot(2,2,1)
+    plt.subplot(2,1,2)
+    #plt.subplot(1,1,1)
     #plt.plot(hmax, S_load, marker = '.',label='load segment'+str(a))
     plt.plot(hmax, S_uload, colours[a], marker = '.', label='Messreihe'+ str(a+1), alpha=0.5)
     plt.grid(visible=True)
-    plt.xlabel('Z-max [nm]')
-    plt.ylabel('relative Steigfigkeit') 
     plt.legend()
     
     # plt.subplot(2,1,2)
@@ -272,14 +272,24 @@ for i in range(len(S_ul[0])):
     S_std.append(np.std(n))
 
 #plot stiffness versus indentation depth with errorbars 
-plt.subplot(1,1,1)       
+#plt.subplot(1,1,1)       
 plt.errorbar(h_mean, S_mean, yerr = S_std, color= 'k', capsize=3, marker='x', label='$ S_{mean} \pm \sigma $ ')
 plt.xlabel('MEMS-Verschiebung [nm]')
 plt.ylabel('Steigung')
-plt.title('S als Mittelwert mit 1 $\sigma$ Standarabweichung ')
-# plt.ylim(1.002,1.012)
-# plt.xlim(0.0,2400)
+#plt.title('S als Mittelwert mit 1 $\sigma$ Standarabweichung ')
+plt.ylim(1.002,1.012)
+plt.xlim(0.0,2400)
 plt.legend(fontsize=9)
+
+plt.subplot(2,2,1)
+plt.plot(P,M, 'k')
+plt.xlabel('Piezo-Verschiebung [nm]')
+plt.ylabel('MEMS-Verschiebung [nm]')
+plt.grid(visible=True)
+plt.subplot(2,2,2)
+plt.plot(t,M, 'k')
+plt.xlabel('Zeit [s]')
+plt.grid(visible=True)
 
 # P_offg =np.array(P_offg)
 # P_offg = P_offg[P_offg<-2000]

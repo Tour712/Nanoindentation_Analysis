@@ -45,7 +45,7 @@ reversed_MEMS = unload_MEMS[::-1] #[nN]
 index = [index_l, index_h, index_ul]
 
 #popt_uload, pcov_uload = curve_fit(func_lin, reversed_Piezo, reversed_MEMS, (0.0,0.95))
-#popt_uload, pcov_uload = curve_fit(JKR_fit1, reversed_Force, reversed_Depth, (100, 2200,-600), maxfev=20000, bounds = ([0,0, -700],[100,3000,-300]))
+popt_uload, pcov_uload = curve_fit(JKR_fit1, reversed_Force, reversed_Depth, (100, 2200,-600), maxfev=20000, bounds = ([0,0, -700],[100,3000,-300]))
 #popt_DMT, pcov_DMT = curve_fit(DMT_fit, unload_Depth, unload_Force, (100,-600), maxfev=20000)
 
 plt.subplot(2,1,1)
@@ -53,7 +53,7 @@ plt.plot(P, M, label = 'JKR')
 plt.subplot(2,1,2)
 plt.plot(Depth, Force, label = 'JKR')
 plt.plot(reversed_Depth, reversed_Force)
-#plt.plot(JKR_fit1(reversed_Force, popt_uload[0], popt_uload[1], popt_uload[2]), reversed_Force,  label = 'JKR')
+plt.plot(JKR_fit1(reversed_Force, popt_uload[0], popt_uload[1], popt_uload[2]), reversed_Force,  label = 'JKR')
 #plt.plot(reversed_Depth, DMT_fit(reversed_Depth, popt_DMT[0], popt_DMT[1]),  label = 'DMT')
 plt.legend()
 
