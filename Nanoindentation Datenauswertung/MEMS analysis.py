@@ -203,3 +203,57 @@ plt.title('MEMS Stufentest')
 
 handles, labels = ax.get_legend_handles_labels()
 fig.legend(handles, labels, loc='upper center')
+
+
+#%%
+#Piezotisch Dynamik
+path = 'data/Piezotisch Dynamik/step response 10nm.tmp.txt'
+path = ['data/Piezotisch Dynamik/step response 1nm.tmp.txt','data/Piezotisch Dynamik/step response 10nm.tmp.txt', 
+        'data/Piezotisch Dynamik/step response 30nm.tmp.txt','data/Piezotisch Dynamik/step response 50nm.tmp.txt',
+        'data/Piezotisch Dynamik/step response 70nm.tmp.txt','data/Piezotisch Dynamik/step response 100nm.tmp.txt']
+plt.rcParams.update({'font.size': 14})
+def func_pt1(t, A, tau,y_0):
+    return A*(1-np.exp(-t/tau))+y_0
+popt,cov = [], []
+colors=['g','b','r','k','c','y','w']
+for a,j in enumerate(path):
+    P = []
+    t = []
+    
+    with open(j) as f:
+        raw_data = csv.DictReader(f, ['time', 'Piezo_pos'], delimiter = '\t')    
+        for line in raw_data:
+            P.append(line['Piezo_pos'])
+            t.append(line['time'])          
+    P, t = P[1:], t[1:]
+    for i in range(len(P)):
+        P[i]= float(P[i].replace(',','.'))   
+        t[i]= float(t[i].replace(',','.'))
+    
+    
+    P, t = np.array(P), np.array(t)
+    P = (P - P[0])*1000
+    popt.append(curve_fit(func_pt1, t, P)[0])
+    plt.subplot(1,2,1)
+    plt.plot(t, P, c=colors[a])  
+    plt.plot(t, func_pt1(t, *popt[a]),linestyle='dashed',c='gray')
+    plt.grid(visible=True)
+    #plt.yscale('log')
+    plt.xlim([0,20])
+    plt.xlabel('Zeit [ms]')
+    plt.ylabel('Piezo [nm]')
+    
+    plt.subplot(1,2,2)
+    plt.plot(t, P, c=colors[a])   
+    plt.grid(visible=True)
+    plt.yscale('log')
+    plt.xlim([0,20])
+    plt.xlabel('Zeit [ms]')
+    plt.ylabel('Piezo [nm]')
+    
+popt = np.array(popt)
+print(popt[:,1])
+plt.subplot(1,2,1)
+plt.plot([],[], linestyle='dashed',c='gray', label='Fit')
+# plt.plot(t, func_pt1(t, *popt[2]),linestyle='dashed')
+plt.legend()
