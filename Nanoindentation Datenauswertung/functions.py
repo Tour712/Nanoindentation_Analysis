@@ -9,7 +9,7 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-
+from lmfit import Parameters,minimize, fit_report
 
 
 poc = 0     #point of contact
@@ -255,6 +255,24 @@ def calc_JKRp(Depth, Force, R=7500, nu_s=0.5, E_t=71, nu_t=0.17):
     E_r = 10**9* ((-3*P_adh)/np.sqrt(R)) * ((3*(delta_0-delta_adh))/(1+4**(-2/3)))**-(3/2) 
     E = (1- nu_s**2)/(1/E_r-(1-nu_t**2)/(E_t*10**9))
     return E_r, E
+
+def JKR_fitting_lmfit(params,P,h):
+    a_R = params['a_R']
+    h_contact = params['h_contact']
+    P_adh = params['P_adh']
+    h_fit = (a_R) * ((1+np.sqrt(1-P/P_adh)))**(4/3) -((2/3)*a_R) * ((1+np.sqrt(1-P/P_adh))/2)**(1/3) + h_contact
+    return h_fit-h
+
+def calc_a0(a_R, R=7500):
+    return np.sqrt(a_R*R)
+    
+def calc_delta(P_adh, R=7500):
+    return -(P_adh*2)/(3*np.pi*R)
+
+def calc_jkr_Er(delta, a_0, R=7500):
+    E_r = (9*np.pi*R**2*delta)/(2*a_0**3)
+    return E_r*10**3
+
 
 #Für Kalibrierung de Kapazitäts-Verschiebung Koeffizienten
 def calc_S(Cap_np_raw, Piezo_np_raw, index_l):
