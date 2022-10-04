@@ -225,6 +225,11 @@ def calc_hc(h_max, P_max, S, eps=0.762):
     h_c = h_max - h_s
     return h_c
 
+def calc_hc_sph(Depth, Force, P_in):
+    h_f = Depth[find_nearest(Force, P_in)]
+    h_c = (np.max(Depth)+h_f)/2
+    return h_c
+
 def calc_emod(S, A, beta=1.05, nu_s=0.5, E_t=71, nu_t=0.17):
     # S in [nN/nm], A in [nm^2]-> E in [nN/nm^2]
     # daher: E[nN/nm^2]*10^9= E[Pa]
@@ -273,7 +278,7 @@ def calc_jkr_Er(delta, a_0, R=7500):
     E_r = (9*np.pi*R**2*delta)/(2*a_0**3)
     return E_r*10**3
 
-def JKR_analysis(P,h,params,R=7500):
+def JKR_analysis(P,h,params,R=7500, nu_s=0.5, E_t=71, nu_t=0.17):
     fitted_params = minimize(JKR_fitting_lmfit, params, args=(P, h), method='leastsq')
     a_R = fitted_params.params['a_R'].value
     h_c = fitted_params.params['h_contact'].value 
@@ -281,7 +286,8 @@ def JKR_analysis(P,h,params,R=7500):
     a_0 = np.sqrt(a_R*R)
     delta = -(P_adh*2)/(3*np.pi*R)
     E_r = 10**3*(9*np.pi*R**2*delta)/(2*a_0**3)
-    return [E_r, delta, a_0, fitted_params]
+    E = E = (1- nu_s**2)/(1/E_r-(1-nu_t**2)/(E_t*10**9))
+    return [E, E_r, delta, a_0, P_adh, fitted_params]
 
 def JKR_fit1(P, a_R, h_contact, P_adh):
     return (a_R) * ((1+np.sqrt(1-P/P_adh)))**(4/3) -((2/3)*a_R) * ((1+np.sqrt(1-P/P_adh))/2)**(1/3) + h_contact

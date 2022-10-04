@@ -64,8 +64,14 @@ P, M, t, C, poc_i = poc_detect(Piezo_np, MEMS_np, time_np, Cap_np)
 
 Depth = Piezo_np - MEMS_np
 Depth = Depth - Depth[poc_i]
-
-E_r_jkr, E_jkr = calc_JKRp(Depth, Force, R= 7500)
+R = 7500
+P_adh = np.min(Force)
+P0 = find_nearest(Force)
+delta_adh = Depth[np.argmin(Force)]
+index_st = np.argmax(Force)
+index_end = np.argmin(Force)
+delta_0 = Depth[index_st + find_nearest(Force[index_st:index_end])]
+E_r_jkr = 10**9* ((-3*P_adh)/np.sqrt(R)) * ((3*(delta_0-delta_adh))/(1+4**(-2/3)))**-(3/2) 
 print(E_r_jkr)
 
 #identify segment boundarys
@@ -98,6 +104,7 @@ plt.title(path)
 plt.subplot(2,1,2)
 plt.plot(Depth, Force)
 plt.plot(np.take(Depth, index), np.take(Force, index), ls = '', marker = "o", label = 'segment boundarys')
+plt.plot([delta_adh, delta_0], [P_adh, P0], marker ='x', markersize='10',linestyle='')
 #plt.plot(reversed_Depth, func_exp(reversed_Depth, popt_exp[0], popt_exp[1], popt_exp[2]), label='power-law Fit')
 #plt.plot(Depth[poc_i:index_l], func_hertz(Depth[poc_i:index_l], E_hz_reduced), label='Hertz-Fit')
 plt.xlabel('Depth [nm]')
