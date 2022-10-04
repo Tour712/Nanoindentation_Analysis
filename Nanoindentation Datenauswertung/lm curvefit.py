@@ -79,7 +79,6 @@ reversed_MEMS = unload_MEMS[::-1] #[nN]
 # Defining the various parameters
 params = Parameters()
 
-
 params.add('a_R',value=2000, min=0,vary=True)
 params.add('h_contact', value=2000,  vary=True)
 params.add('P_adh', value=np.min(Force), max=np.min(Force), vary=True)

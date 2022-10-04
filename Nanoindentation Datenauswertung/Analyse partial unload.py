@@ -283,10 +283,10 @@ path = 'data/PDMS/13.09/APM-PDMS-150ms,3um,20nms,9cycles,1,5um offset,9x1-5'
 #path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,20nms,9cycles,1,5um offset,75%,5x1-7'
 path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,7nms,9cycles,1,5um offset,75%,5x1-8'
 path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,20nms,16cycles,1,5um offset,75%,16x1-9'
-path = 'data/PDMS_10-1/20.09/APM-PDMS10-1-100ms,4,5um,20nms,16cycles,2,5um offset,75%,5x1-1'
-
+#path = 'data/PDMS_10-1/20.09/APM-PDMS10-1-100ms,4,5um,20nms,16cycles,2,5um offset,75%,5x1-1'
 #path = 'data/PDMS/15.09/AR-PDMS-100ms,4um,20nms,1,5um offset,27x1-1'
 
+path ='C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/APM-PDMS10-1-100ms,4um,20nms,2um offset,16cycles(5x1)'
 Piezo_, MEMS_, time_, Cap_ = imp_data(path)
 Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
 S_load = []
@@ -298,7 +298,7 @@ S_l, S_e, S_linear = [],[],[]
 E_r_JKR, E_JKR = [],[]
 f_err = 0
 f_n = 0
-s = 1 #skip first s measurement
+s = 0 #skip first s measurement
 for j in range(len(Piezo)-s):
     j=j+s
     
@@ -363,8 +363,7 @@ for j in range(len(Piezo)-s):
         f_n +=1
     
         if i==(len(index_l)-1):
-            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.8, 0.95])
-            
+            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.9, 0.95])                     
             # try:
             #     par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.8, 0.95], fit_func=func_log)
             # except RuntimeError:
@@ -375,10 +374,14 @@ for j in range(len(Piezo)-s):
                 par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0.8, 0.95], fit_func=func_exp)
             except RuntimeError:
                 print("Error - power_fit failed")
+                #append nan value to list, if fit failed
+                S_exp.append(np.nan)
+                h_ges.append(np.max(up))
+                popt_lin.append(par_l[0])
                 f_err +=1
                 continue
         else:         
-            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.05, 0.95])
+            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.6, 0.95])
             # try:
             #     par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.05, 0.95], fit_func=func_log)
             # except RuntimeError:
@@ -389,6 +392,10 @@ for j in range(len(Piezo)-s):
                 par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0.05, 0.95], fit_func=func_exp)
             except RuntimeError:
                 print("Error - power_fit failed")
+                #append nan value to list, if fit failed
+                S_exp.append(np.nan)
+                h_ges.append(np.max(up))
+                popt_lin.append(par_l[0])
                 f_err +=1
                 continue
                
@@ -427,8 +434,8 @@ for i in range(len(S_e[0])):
 plt.figure()       
 plt.errorbar(h_mean, S_m[0], yerr = S_s[0],capsize=3, label='from power fit')
 # plt.errorbar(h_mean, S_m[1], yerr = S_s[1], capsize=3, label='from log fit')
-plt.errorbar(h_mean, S_m[2], yerr = S_s[2], capsize=3, label='from linear fit')
-plt.grid(b=True)
+#plt.errorbar(h_mean, S_m[2], yerr = S_s[2], capsize=3, label='from linear fit')
+plt.grid(visible=True)
 plt.xlabel('MEMS-Verschiebung [nm]')
 plt.ylabel('Steifigkeit')
 plt.title('S als Mittelwert mit 1 $\sigma$ Standarabweichung ')

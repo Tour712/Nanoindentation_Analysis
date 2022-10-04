@@ -29,51 +29,73 @@ plt.hist(MEMS_np_raw, 50)
 
 #%%
 #evaluate drift data
+from matplotlib.ticker import FormatStrFormatter
+path = 'C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/Drift/Drift-1, pressure on, chuck not activated'
 path = 'data/Drift-2, pressure off, chuck not activated'
-path = 'data/Drift/Drift-3, vacuum chuck activated, on 3inchwafer'
+#path = 'data/Drift/Drift-3, vacuum chuck activated, on 3inchwafer'
 MEMS, time, T, Cap = imp_data(path)
 MEMS_np_raw, time_np_raw, T_np_raw = data_conversion(MEMS, time, T)
-s = 500 #start at s min 
-MEMS_np_raw, time_np_raw, T_np_raw = MEMS_np_raw[s*2:], time_np_raw[s*2:], T_np_raw[s*2:]
-N = 5
-T_rmean = ndi.uniform_filter1d(T_np_raw[0:1100], N, mode='constant', origin=-(N//2))[:-(N-1)]
+s = 5 #start at s min 
+e = 571 #end at e min
+MEMS_np_raw, time_np_raw, T_np_raw = MEMS_np_raw[s*2:e*2], time_np_raw[s*2:e*2], T_np_raw[s*2:e*2]
+time_np_raw =time_np_raw-time_np_raw[0]
+N = 30
+T_rmean = ndi.uniform_filter1d(T_np_raw, N, mode='constant', origin=-(N//2))[:-(N-1)]
 
 #calculate 5min drift
-m = 50  #drift Interval in min
+m = 10  #drift Interval in min
 drift_M = np.zeros(len(MEMS_np_raw))
 for i in range(len(MEMS_np_raw)-m*2):
     drift_M[i] = (MEMS_np_raw[i]-MEMS_np_raw[i+m*2])/m
     
 m = 10  #drift Interval in min
 drift_T = np.zeros(len(T_np_raw))
-for i in range(len(T_np_raw)-m*2):
-    drift_T[i] = (T_np_raw[i]-T_np_raw[i+m*2])/m
+for i in range(len(T_rmean)-m*2):
+    drift_T[i] = (T_rmean[i]-T_rmean[i+m*2])/m
     
-plt.subplot(2,1,1)
-plt.plot(time_np_raw[15:], drift_M[15:])
-plt.xlabel('Zeit [min]')
-plt.ylabel('Driftrate [nm/min]')
-plt.title('Drift Test')
-plt.legend()
+# plt.subplot(2,1,1)
+# plt.plot(time_np_raw, drift_T)
+# plt.xlabel('Zeit [min]')
+# plt.ylabel('Driftrate [nm/min]')
+# plt.title('Drift Test')
+# plt.legend()
 
-plt.subplot(2,1,2)
-plt.plot(time_np_raw, MEMS_np_raw)
-plt.xlabel('Zeit [min]')
-plt.ylabel('Verschiebung von Piezo/MEMS [nm]')
-plt.title('Drift Test')
-plt.legend()
+# plt.subplot(2,1,2)
+# plt.plot(time_np_raw, MEMS_np_raw)
+# plt.xlabel('Zeit [min]')
+# plt.ylabel('Verschiebung von Piezo/MEMS [nm]')
+# plt.title('Drift Test')
+# plt.legend()
 
 
 
-fig, ax1 = plt.subplots()
-ax1.plot(time_np_raw[0:len(T_rmean)], MEMS_np_raw[0:len(T_rmean)])
+fig, (ax1,ax3) = plt.subplots(2,1)
+ax1.plot(time_np_raw[0:len(T_rmean)], MEMS_np_raw[0:len(T_rmean)],'k', linestyle='', marker='.')
 ax1.set_xlabel('Zeit [min]')
-ax1.set_ylabel('MEMS-Verschiebung [nm]')
-
+ax1.set_ylim(124,146)
+ax2.yaxis.set_major_formatter(FormatStrFormatter('%.4f'))
+ax1.set_ylabel('Verschiebung [nm]')
+ax1.set_xlim(-5,500)
+ax1.grid(visible=True)
 ax2 = ax1.twinx()
-ax2.plot(time_np_raw[0:len(T_rmean)], T_rmean, 'r', ls='', marker='.')
+ax2.yaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+ax2.plot(time_np_raw[0:len(T_rmean)], T_rmean, 'r', ls='', marker='1',label='Temperatur')
 ax2.set_ylabel('Temperatur [°C]')
+ax2.plot([],'k',linestyle='', marker='.', label='Verschiebung')
+ax2.legend(loc='lower right',prop={'size': 10})
 
+ax3.plot(time_np_raw, drift_M, 'k', label ='Positionsdrift')
+ax3.grid(visible=True)
+ax3.set_xlabel('Zeit [min]')
+ax3.set_ylabel('Positionsdrift [nm/min]')
+ax3.set_ylim(-0.15,0.15)
+ax3.set_xlim(-5,500)
+ax4 = ax3.twinx()
+ax4.plot(time_np_raw, drift_T*1000, 'r', label='Temperaturdrift')
+ax4.set_ylabel('Temperaturdrift [mK/min]')
+ax4.plot([],'k', label='Positionsdrift')
+ax4.set_ylim(-0.17,0.17)
+ax4.legend(prop={'size': 10})
 plt.show()
 
 #%%
