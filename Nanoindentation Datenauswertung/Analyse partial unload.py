@@ -287,6 +287,8 @@ path = 'data/PDMS/14.09/APM-PDMS-150ms,4um,20nms,16cycles,1,5um offset,75%,16x1-
 #path = 'data/PDMS/15.09/AR-PDMS-100ms,4um,20nms,1,5um offset,27x1-1'
 
 path ='C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/APM-PDMS10-1-100ms,4um,20nms,2um offset,16cycles(5x1)'
+#path = 'C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/APM-PDMS10-1-100ms,4um,40nms,2um offset,16cycles(5x1)'
+
 Piezo_, MEMS_, time_, Cap_ = imp_data(path)
 Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
 S_load = []
@@ -308,8 +310,8 @@ for j in range(len(Piezo)-s):
     P = (P-P[0] )*1000
     
     Depth = P-M
-    Depth = Depth - Depth[poc]
-
+    #Depth = Depth - Depth[poc]
+    Depth = Depth - Depth[np.argmin(Force[0:np.argmax(Force)])]
     # store each measurement as np array in a list
     Piezo[j], MEMS[j], time[j] = P, M, t
        
@@ -319,7 +321,7 @@ for j in range(len(Piezo)-s):
     index_l.append(data_splitting(P, M, t)[0])
     index_h.append(data_splitting(P, M, t)[1])
     index_ul.append(data_splitting(P, M, t)[2]) 
-    
+    P_off.append(np.min(Force))
     # #save end of segment index in list
     while index[-1] < np.argmin(M):
         ind = []
@@ -331,21 +333,21 @@ for j in range(len(Piezo)-s):
     
     # plt.figure()
     # plt.subplot(2,1,1)
-    # plt.plot(t ,Force, ls = '', marker = "+", markersize = 2)
-    # plt.plot(np.take(t, index), np.take(Force, index), ls = '', marker = "o", label = 'segment boundarys')
+    # plt.plot(Depth, Force, color='b')
+    # plt.grid(visible=True)
+    # #plt.plot(np.take(Depth, index), np.take(Force, index), ls = '', marker = "o", label = 'segment boundarys')
+    # plt.xlabel('Eindringtiefe [nm]')
+    # plt.ylabel('Kraft [nN]')
+    
+    # plt.subplot(2,1,2)
+    # plt.plot(t ,Force, color='b', marker = "+", markersize = 2)
+    # #plt.plot(np.take(t, index), np.take(Force, index), ls = '', marker = "o", label = 'segment boundarys')
+    # plt.grid(visible=True)
     # plt.xlabel('Zeit [s]')
     # plt.ylabel('Kraft [nN]')
     # plt.legend()
+       
     
-    # plt.subplot(2,1,2)
-    # plt.plot(Depth, Force)
-    # #plt.plot(np.take(Depth, index), np.take(Force, index), ls = '', marker = "o", label = 'segment boundarys')
-    # plt.xlabel('Piezoposition [nm]')
-    # plt.ylabel('Kraft [nN]')
-    
-    
-    E_r_JKR.append(calc_JKRp(Depth, Force, R= 7500)[0])
-    E_JKR.append(calc_JKRp(Depth, Force, R= 7500)[1])
     unload_Depth, unload_Force = [],[]
     #h_max = []
     popt_exp, pcov_exp = [],[]
@@ -363,15 +365,15 @@ for j in range(len(Piezo)-s):
         f_n +=1
     
         if i==(len(index_l)-1):
-            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.9, 0.95])                     
+            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.85, 1])                     
             # try:
-            #     par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.8, 0.95], fit_func=func_log)
+            #     par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.8, 0.99], fit_func=func_log)
             # except RuntimeError:
             #     print("Error - log_fit failed")
             #     continue
                 
             try:
-                par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0.8, 0.95], fit_func=func_exp)
+                par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0.8, 0.99], fit_func=func_exp)
             except RuntimeError:
                 print("Error - power_fit failed")
                 #append nan value to list, if fit failed
@@ -381,15 +383,15 @@ for j in range(len(Piezo)-s):
                 f_err +=1
                 continue
         else:         
-            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.6, 0.95])
+            par_l, cov_l = fitting(up[::-1] ,uM[::-1], [0.3, 1])
             # try:
-            #     par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.05, 0.95], fit_func=func_log)
+            #     par_log, cov_log = fitting(up[::-1] , np.log(uM[::-1]), [0.05, 1], fit_func=func_log)
             # except RuntimeError:
             #     print("Error - log_fit failed")
             #     continue
             
             try:
-                par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0.05, 0.95], fit_func=func_exp)
+                par_exp, cov_exp = fitting(up[::-1] ,uM[::-1] , [0, 1], fit_func=func_exp)
             except RuntimeError:
                 print("Error - power_fit failed")
                 #append nan value to list, if fit failed
@@ -404,8 +406,8 @@ for j in range(len(Piezo)-s):
         popt_exp.append(par_exp)
         #popt_log.append(par_log)
         popt_lin.append(par_l[0])
-        #S_log.append(calc_stiff(par_log, up[0]))
-        S_exp.append(calc_stiff(par_exp, up[0]))
+        #S_log.append(calc_stiff(par_log, np.max(up)))
+        S_exp.append(calc_stiff(par_exp, up[1]))
         h_ges.append(np.max(up))
 
     
@@ -423,8 +425,8 @@ for i in range(len(S_e[0])):
     S_m[0].append(np.mean(S_e[:,i]))
     S_s[0].append(np.std(S_e[:,i]))
     
-    # S_m[1].append(np.mean(S_l[:,i]))
-    # S_s[1].append(np.std(S_l[:,i]))
+    #S_m[1].append(np.mean(S_l[:,i]))
+    #S_s[1].append(np.std(S_l[:,i]))
     
     S_m[2].append(np.mean(S_linear[:,i]))
     S_s[2].append(np.std(S_linear[:,i]))
@@ -433,7 +435,7 @@ for i in range(len(S_e[0])):
 #plot stiffness versus indentation depth with errorbars 
 plt.figure()       
 plt.errorbar(h_mean, S_m[0], yerr = S_s[0],capsize=3, label='from power fit')
-# plt.errorbar(h_mean, S_m[1], yerr = S_s[1], capsize=3, label='from log fit')
+#plt.errorbar(h_mean, S_m[1], yerr = S_s[1], capsize=3, label='from log fit')
 #plt.errorbar(h_mean, S_m[2], yerr = S_s[2], capsize=3, label='from linear fit')
 plt.grid(visible=True)
 plt.xlabel('MEMS-Verschiebung [nm]')

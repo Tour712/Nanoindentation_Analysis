@@ -124,11 +124,11 @@ path = ['data/AR-SA-300-1-300-2um-diff_LF-4x4-3']
 path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-1']
 path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-1']
 path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2']
-path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2']
+#path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2']
 #path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']
 #path =['O:/5-1/5-11/Messungen/2022/06_Nico_MA/05_Datenauswertung/Python/Nanoindentation Datenauswertung/data/PDMS/AR-SA-600-1-600-4um-diff_LF-5x5-1','data/AR-SA-200-1-200-4um-diff_LF-4x4-1','data/AR-SA-600-1-600-4um-diff_LF-4x4-1', 'data/AR-SA-600-1-600-3,5um-diff_LF-4x4-2', 'data/AR-SA-300-1-300-2um-diff_LF-4x4-3']
 #path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-1', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-1', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-4x4-2' ,'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']   #Messungen mit neuen MEMS
-path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-1','data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']   #Messungen mit neuen MEMS
+#path = ['data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-1','data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-2', 'data/Saphir/AR-SA-450-1-450-3um-diff_LF-5x5-3']   #Messungen mit neuen MEMS
 bad_curves = 0
 #S_m = 419*10**-6
 P_offg, P_ing = [], []
@@ -157,7 +157,7 @@ for a, j in enumerate(path):
         # Piezo offset position and conversion to [nm]
         # detect POC
         P_, M_, t_, C_, poc = poc_detect(P, M, t, C)  
-        P = (P )*1000
+        P = (P-P[0] )*1000
         P_c =  P-P[poc]
         # store each measurement as np array in a list
         Piezo[i], MEMS[i], time[i] = P, M, t
@@ -306,7 +306,19 @@ ax2.hist(P_ing, 25, histtype='bar', color='g', stacked=None)
 ax2.set_xlabel('Snap-in Kraft [nN]',fontsize=14)
 
 fig.suptitle('Spitze-Probe Interaktionen (Saphir-Probe)', fontsize=16)
+#%%
 
+for i in range(len(Piezo)):
+    plt.figure()
+    idx = np.argmax(MEMS[i])
+    plt.plot(Piezo[i][0:idx], MEMS[i][0:idx]*3.01,'r', marker='.',markersize=2, linestyle='-')
+    plt.xlabel('Piezopositzion [nm]', size=18)
+    plt.ylabel('Kraft [nN]', size=18)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    # plt.ylim(-200,5)
+    # plt.xlim(P[0],50)
+    plt.grid()
 #%%
 #this script is for analysis of array Measurement on PDMS
 
@@ -376,6 +388,14 @@ for a, j in enumerate(path):
         P_ing.append(Force[poc])
         P_offg.append(Force[index_ul])
         
+        #JKR fitting
+        # params = Parameters()
+
+        # params.add('a_R',value=2000, min=0,vary=True)
+        # params.add('h_contact', value=2000,  vary=True)
+        # params.add('P_adh', value=np.min(Force), max=np.min(Force), vary=True)
+        # jkr_results[i] = JKR_analysis(reversed_Force, reversed_Depth, params)[0]
+
         
         frange = [0.7, 0.95]
         start_index = int(len(reversed_Force)*frange[0])
@@ -386,14 +406,6 @@ for a, j in enumerate(path):
             frange[0] = idx_0/len(reversed_Force)
             print(frange) 
         
-        #JKR fitting
-        # params = Parameters()
-
-        # params.add('a_R',value=2000, min=0,vary=True)
-        # params.add('h_contact', value=2000,  vary=True)
-        # params.add('P_adh', value=np.min(Force), max=np.min(Force), vary=True)
-        # jkr_results[i] = JKR_analysis(reversed_Force, reversed_Depth, params)[0]
-
         popt_exp, pcov_exp = fitting(reversed_Depth, reversed_Force, frange, fit_func=func_exp)
         reversed_Force= reversed_Force+Force[index_ul]
         S = calc_stiff(popt_exp, reversed_Depth[-1])    #[nN/nm]
@@ -465,21 +477,22 @@ path = ['C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoinde
 #path=['C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/19.09/AR-PDMS10-1-100ms,4,5um,20nms,2,5um offset,16x1(x5)']
 
 #PDMS 10:1 sample, with distance between array points
-#path = ['C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,20nms,2um offset,16x1(x3)']
-path =['C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,40nms,2um offset,16x1(x3)']
+path = ['C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,20nms,2um offset,16x1(x3)']
+#path =['C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,40nms,2um offset,16x1(x3)']
 
 
 
-#path = ['C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,20nms,2um offset,16x1(x3)','C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,40nms,2um offset,16x1(x3)' ]
-
+path = ['C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,20nms,2um offset,16x1(x3)','C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,40nms,2um offset,16x1(x3)' ]
+plt.rcParams.update({'font.size': 20})
 Material =('A','B')
-P_offg, P_ing = [], []
 fig1, ax1 = plt.subplots()
 fig2, ax2 = plt.subplots()
+fig3, ax3 = plt.subplots()
 colors = ['b','r']
 Laderate = ['20 nm/s','40 nm/s']
 for a, j in enumerate(path):
-    hmax = []
+    P_offg, P_ing = [], []
+    hmax, S_ges = [],[]
     Piezo_, MEMS_, time_, Cap_ = imp_data(j)
     Piezo, MEMS, time, Cap, POC, X_val, Y_val = split_array(Piezo_, MEMS_, time_, Cap_)
     F, D, rD,rF = [0]*len(Piezo), [0]*len(Piezo),[0]*len(Piezo),[0]*len(Piezo)
@@ -514,6 +527,7 @@ for a, j in enumerate(path):
         reversed_Force = unload_Force[::-1] #[nN]
         hmax.append(np.max(Depth))
         P_offg.append(np.min(Force))
+        P_ing.append(np.min(Force[0:np.argmax(Force)]))
         rD[i], rF[i] = reversed_Depth,reversed_Force
         
         #plot segment boundaries
@@ -523,33 +537,52 @@ for a, j in enumerate(path):
         
         #JKR fitting
         params = Parameters()
-        
+        hc_val = Depth[np.argmin(Force)]
         params.add('a_R',value=2000, min=0,vary=True)
+        #params.add('h_contact', value=hc_val,min=hc_val,max=hc_val+300,  vary=True)
         params.add('h_contact', value=2000,  vary=True)
-        params.add('P_adh', value=np.min(Force), max=np.min(Force), vary=True)
-        #jkr_results.append(JKR_analysis(unload_Force, unload_Depth, params))
+        params.add('P_adh', value=np.min(unload_Force), max=np.min(unload_Force), vary=True)
+        #fit of loading segment
+        #jkr_results.append(JKR_analysis(Force[poc:index_l], Depth[poc:index_l], params))
+        #fit of unloading segment
         jkr_results.append(JKR_analysis(reversed_Force[100:], reversed_Depth[100:], params))
         a_R = jkr_results[i][5].params['a_R'].value
         h_c = jkr_results[i][5].params['h_contact'].value 
         P_adh = jkr_results[i][5].params['P_adh'].value 
         #Depth = Depth - h_c
         
+        # frange = [0.7, 0.99]
+        # start_index = int(len(reversed_Force)*frange[0])
+        # idx_0 = find_nearest(reversed_Force,value=3)
+        # reversed_Force= reversed_Force-Force[index_ul]
+        
+        # # if reversed_Force[start_index]<0:
+        # #     frange[0] = idx_0/len(reversed_Force)
+        # #     print(frange) 
+         
+        # popt_exp, pcov_exp = fitting(reversed_Depth, reversed_Force, frange, fit_func=func_exp)
+        # reversed_Force= reversed_Force+Force[index_ul]
+        # S = calc_stiff(popt_exp, reversed_Depth[-1])    #[nN/nm]
+        # S_ges.append(S)
         #uncomment for visual inspection of fitting
-    # plt.figure()
-    # plt.subplot(2,1,1)
-    # plt.plot(Depth,Force, color='b',label='Messdaten',marker='x')
-    # plt.plot(JKR_fit1(reversed_Force,a_R,h_c, P_adh), reversed_Force, color='r',label = 'JKR fit')
-    # plt.plot([JKR_fit1(P_adh,a_R,h_c, P_adh)], [P_adh], color='k', marker='.', markersize=25,label = 'snap-out', linestyle='')
-    # plt.plot(Depth[np.argmin(Force[0:np.argmax(Force)])], Force[np.argmin(Force[0:np.argmax(Force)])] , color='g',linestyle='', marker='.', markersize=25,label = 'snap-in')
-    # plt.xlabel('Eindringtiefe [nm]')
-    # plt.ylabel('Kraft [nN]')
-    # plt.legend()
-    # plt.grid(visible=True)
-    # plt.subplot(2,1,2)
-    # plt.plot(t,Force, color='b',marker='x')
-    # plt.xlabel('Zeit [s]')
-    # plt.ylabel('Kraft [nN]')
-    # plt.grid(visible=True)
+    plt.figure()
+    plt.subplot(2,1,1)
+    plt.plot(Depth,Force, color='b',label='Messdaten',marker='x')
+    #loading segment
+    plt.plot(JKR_fit1(Force[poc:index_ul],a_R,h_c, P_adh), Force[poc:index_ul], color='r',label = 'JKR fit')
+    #unloading segment
+    #plt.plot(JKR_fit1(reversed_Force,a_R,h_c, P_adh)-h_c, reversed_Force, color='r',label = 'JKR fit')
+    plt.plot([JKR_fit1(P_adh,a_R,h_c, P_adh)], [P_adh], color='k', marker='.', markersize=25,label = 'snap-out', linestyle='')
+    plt.plot(Depth[np.argmin(Force[0:np.argmax(Force)])], Force[np.argmin(Force[0:np.argmax(Force)])] , color='g',linestyle='', marker='.', markersize=25,label = 'snap-in')
+    plt.xlabel('Eindringtiefe [nm]')
+    plt.ylabel('Kraft [nN]')
+    plt.legend(fontsize=10)
+    plt.grid(visible=True)
+    plt.subplot(2,1,2)
+    plt.plot(t,Force, color='b',marker='x')
+    plt.xlabel('Zeit [s]')
+    plt.ylabel('Kraft [nN]')
+    plt.grid(visible=True)
  
          
         #plt.subplot(3,1,2)
@@ -563,6 +596,8 @@ for a, j in enumerate(path):
     jkr_results=np.array(jkr_results)
     E_jkr = jkr_results[:,0]  
     P_Adh = jkr_results[:,4] 
+    delta = jkr_results[:,2] 
+    #S_ges = np.array(S_ges)
     # plt.figure()
     # plt.plot(E_jkr)
     
@@ -578,18 +613,26 @@ for a, j in enumerate(path):
         h.append(np.mean(hmax[c::i_num]))
         P_Adh_m.append(np.mean(P_Adh[c::i_num]))
         P_Adh_s.append(np.std(P_Adh[c::i_num]))
-        # S_mean.append(np.mean(S_ges[c::i_num]))
-        # S_std.append(np.std(S_ges[c::i_num]))
+        #S_mean.append(np.mean(S_ges[c::i_num]))
+        #S_std.append(np.std(S_ges[c::i_num]))
         
-    
+    h = np.array(h)
     ax1.errorbar(h, E_mean, yerr = E_std,capsize=4, linewidth=2 , c = colors[a], label = Laderate[a])
     #ax1.scatter(hmax, E_jkr, c= 'r')
-    ax1.set_ylim(0,10)
-    plt.grid(visible=True)
-    ax1.set_xlabel('Eindringtiefe [nm]',fontsize=14)
-    ax1.set_ylabel('E-Modul [MPa]', fontsize=14) 
+    #ax1.set_ylim(0,10)
+    ax1.grid(visible=True)
+    ax1.set_xlabel('Eindringtiefe [nm]')
+    ax1.set_ylabel('E-Modul [MPa]') 
     ax1.legend()
     
+    #ax3.errorbar(h, S_mean, yerr = S_std,capsize=4, linewidth=2 , c = 'g', label = 'Steifigkeit')
+    ax4 = ax3.twinx()
+    ax4.plot(h, area_sphere(h), label ='Flächenfunktion')
+    ax3.legend()
+    
     ax2.errorbar(h, P_Adh_m, yerr = P_Adh_s, capsize=4, linewidth=2 , c = colors[a], label = Laderate[a])
+    #ax2.scatter(hmax, P_offg, color=colors[a], label = 'aus Messdaten')
+    ax2.grid(visible=True)
     ax2.set_xlabel('Eindringtiefe [nm]')
     ax2.set_ylabel('Adhäsionskraft [nN]')
+    ax2.legend()
