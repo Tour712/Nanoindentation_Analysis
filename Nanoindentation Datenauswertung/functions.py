@@ -297,3 +297,9 @@ def JKR_fit1(P, a_R, h_contact, P_adh):
 def calc_S(Cap_np_raw, Piezo_np_raw, index_l):
     S = (Cap_np_raw[index_l-1]-Cap_np_raw[0])/(Piezo_np_raw[index_l-1]-Piezo_np_raw[0])
     return S
+
+def Hertz(P):
+    E=6*10**(-9)
+    R=7500
+    return ((3*P)/(4*E*R**0.5))**(2/3)
+    

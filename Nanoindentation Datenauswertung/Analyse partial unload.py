@@ -300,7 +300,7 @@ S_l, S_e, S_linear = [],[],[]
 E_r_JKR, E_JKR = [],[]
 f_err = 0
 f_n = 0
-s = 0 #skip first s measurement
+s = 4 #skip first s measurement
 for j in range(len(Piezo)-s):
     j=j+s
     

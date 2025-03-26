@@ -482,8 +482,8 @@ path = ['C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoinde
 
 
 
-path = ['C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,20nms,2um offset,16x1(x3)','C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,40nms,2um offset,16x1(x3)' ]
-plt.rcParams.update({'font.size': 20})
+#path = ['C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,20nms,2um offset,16x1(x3)','C:/Users/nicoe/Spyder Projekte/Nanoindentation Analysis/Python-Nanoindentation-Analysis/Nanoindentation Datenauswertung/data/PDMS_10-1/30.09/AR-PDMS10-1-100ms,4um,40nms,2um offset,16x1(x3)' ]
+plt.rcParams.update({'font.size': 14})
 Material =('A','B')
 fig1, ax1 = plt.subplots()
 fig2, ax2 = plt.subplots()
